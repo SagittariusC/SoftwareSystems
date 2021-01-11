@@ -1,2 +1,16 @@
+plugins {
+    id "com.gradle.enterprise" version "3.5.1"
+}
+
+gradleEnterprise {
+    buildScan {
+        termsOfServiceUrl = "https://gradle.com/terms-of-service"
+        termsOfServiceAgree = "yes"
+    }
+}
+
+
+
 include ':app'
 rootProject.name = "My First App"
+
