@@ -11,22 +11,9 @@ pipeline {
         }
         stage('Compile') {
             steps {
-                // Compile the app and its dependencies
-                sh './gradlew compile${'debug'}Sources'
+                gradlew('clean', 'classes')
             }
         }
-        stage('Build') {
-            steps {
-                // Compile the app and its dependencies
-                sh './gradlew assemble${BUILD_TYPE}'
-                sh './gradlew generatePomFileForLibraryPublication'
-            }
-        }
-        stage('Publish') {
-            steps {
-                // Archive the APKs so that they can be downloaded from Jenkins
-                archiveArtifacts "**/${APP_NAME}-${'debug'}.apk"
-            }
-        }
+
     }
 }
