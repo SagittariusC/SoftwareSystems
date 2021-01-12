@@ -9,21 +9,10 @@ pipeline {
                 git(credentialsId: 'GithubLogin', url: 'https://github.com/SagittariusC/SoftwareSystems.git', branch: 'main')
             }
         }
-        stage('Detect build type') {
-            steps {
-                script {
-                    if (env.BRANCH_NAME == 'develop' || env.CHANGE_TARGET == 'develop') {
-                        env.BUILD_TYPE = 'debug'
-                    } else if (env.BRANCH_NAME == 'main' || env.CHANGE_TARGET == 'master') {
-                        env.BUILD_TYPE = 'release'
-                    }
-                }
-            }
-        }
         stage('Compile') {
             steps {
                 // Compile the app and its dependencies
-                sh './gradlew compile${'BUILD_TYPE'}Sources'
+                sh './gradlew compile${'debug'}Sources'
             }
         }
         stage('Build') {
@@ -36,7 +25,7 @@ pipeline {
         stage('Publish') {
             steps {
                 // Archive the APKs so that they can be downloaded from Jenkins
-                archiveArtifacts "**/${APP_NAME}-${'release'}.apk"
+                archiveArtifacts "**/${APP_NAME}-${'debug'}.apk"
             }
         }
     }
