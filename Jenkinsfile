@@ -5,7 +5,7 @@ pipeline {
       steps {
         git(url: 'https://github.com/SagittariusC/SoftwareSystems.git', branch: 'main', credentialsId: 'GithubLogin')
         withGradle() {
-          build 'debug'
+          sh '$ ./gradlew build'
         }
 
       }
