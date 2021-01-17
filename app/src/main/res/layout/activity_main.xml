@@ -7,7 +7,7 @@
     tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/left_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -18,7 +18,7 @@
         app:layout_constraintTop_toBottomOf="@+id/edit_caption" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/right_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -29,25 +29,24 @@
         app:layout_constraintTop_toBottomOf="@+id/edit_caption" />
 
     <Button
-        android:id="@+id/button4"
+        android:id="@+id/filter_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
         android:onClick="filter"
         android:text="Filter"
-        app:layout_constraintBottom_toTopOf="@+id/button5"
+        app:layout_constraintBottom_toTopOf="@+id/upload_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.492"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button3" />
+        app:layout_constraintTop_toBottomOf="@+id/snap" />
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/snap"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:onClick="takePhoto"
         android:text="Snap"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.492"
@@ -55,7 +54,7 @@
         app:layout_constraintTop_toBottomOf="@+id/edit_caption" />
 
     <Button
-        android:id="@+id/button5"
+        android:id="@+id/upload_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
@@ -76,10 +75,10 @@
         android:textStyle="italic"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+        app:layout_constraintTop_toBottomOf="@+id/displayImageView" />
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/displayImageView"
         android:layout_width="376dp"
         android:layout_height="352dp"
         android:layout_marginTop="16dp"
