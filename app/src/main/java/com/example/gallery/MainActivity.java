@@ -21,6 +21,7 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,9 +36,10 @@ public class MainActivity extends AppCompatActivity {
     public static final int CAMERA_REQUEST_CODE = 102;
     static final int REQUEST_TAKE_PHOTO = 1;
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
-    //public int img_counter = 0;
+    public int img_counter = 0;
     ImageView selectedImage;
-    Button camera, left, right;
+    Button camera;
+    ImageButton left, right;
     String currentPhotoPath;
     TextView date_time;
 
@@ -51,6 +53,11 @@ public class MainActivity extends AppCompatActivity {
         left = findViewById(R.id.left_button);
         right = findViewById(R.id.right_button);
         date_time = findViewById(R.id.timestamp);
+        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+        img_counter = files.length - 1;
+        selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
+        String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+        date_time.setText(lastModDate);
 
         camera.setOnClickListener (new View.OnClickListener() {
             @Override
@@ -59,32 +66,44 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        left.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick (View v) {
-//                moveLeft();
-//            }
-//        });
-//
-//        right.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick (View v) {
-//                moveRight();
-//            }
-//        });
+        left.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick (View v) {
+                moveLeft();
+            }
+        });
+
+        right.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick (View v) {
+                moveRight();
+            }
+        });
     }
 
-//    private void moveRight() {
-//        img_counter++;
-//        File f = new File(currentPhotoPath);
-//        File files[] = f.listFiles();
-//        selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-//    }
-//
-//    private void moveLeft() {
-//        img_counter--;
-//
-//    }
+    private void moveRight() {
+        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+        if (files.length > 1 && img_counter > 0) {
+            img_counter--;
+            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
+            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+            date_time.setText(lastModDate);
+        } else if (img_counter == 0) {
+            Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void moveLeft() {
+        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+        if (files.length > 1 && img_counter < files.length - 1) {
+            img_counter++;
+            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
+            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+            date_time.setText(lastModDate);
+        } else if (img_counter == files.length - 1) {
+            Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     public void filter(View view) {
         Intent intent = new Intent(this, Filter.class);
@@ -117,15 +136,8 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == Activity.RESULT_OK) {
                 File f = new File(currentPhotoPath);
                 selectedImage.setImageURI(Uri.fromFile(f));
-
-                ExifInterface exif = null;
-                try {
-                    exif = new ExifInterface(currentPhotoPath);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                String datetime = exif.getAttribute(ExifInterface.TAG_DATETIME);
-                date_time.setText(datetime);
+                String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(f.lastModified()));
+                date_time.setText(lastModDate);
             }
         }
     }
