@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,7 +21,9 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -33,9 +36,12 @@ public class MainActivity extends AppCompatActivity {
     public static final int CAMERA_REQUEST_CODE = 102;
     static final int REQUEST_TAKE_PHOTO = 1;
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
+    public int img_counter = 0;
     ImageView selectedImage;
     Button camera;
+    ImageButton left, right;
     String currentPhotoPath;
+    TextView date_time;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +50,14 @@ public class MainActivity extends AppCompatActivity {
 
         selectedImage = findViewById(R.id.displayImageView);
         camera = findViewById(R.id.snap);
+        left = findViewById(R.id.left_button);
+        right = findViewById(R.id.right_button);
+        date_time = findViewById(R.id.timestamp);
+        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+        img_counter = files.length - 1;
+        selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
+        String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+        date_time.setText(lastModDate);
 
         camera.setOnClickListener (new View.OnClickListener() {
             @Override
@@ -51,6 +65,44 @@ public class MainActivity extends AppCompatActivity {
                 askCameraPermissions();
             }
         });
+
+        left.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick (View v) {
+                moveLeft();
+            }
+        });
+
+        right.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick (View v) {
+                moveRight();
+            }
+        });
+    }
+
+    private void moveRight() {
+        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+        if (files.length > 1 && img_counter > 0) {
+            img_counter--;
+            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
+            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+            date_time.setText(lastModDate);
+        } else if (img_counter == 0) {
+            Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void moveLeft() {
+        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+        if (files.length > 1 && img_counter < files.length - 1) {
+            img_counter++;
+            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
+            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+            date_time.setText(lastModDate);
+        } else if (img_counter == files.length - 1) {
+            Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void filter(View view) {
@@ -77,11 +129,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-//    private void openCamera() {
-//        Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//        startActivityForResult(camera, CAMERA_REQUEST_CODE);
-//    }
-
     @Override
     protected void onActivityResult (int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -89,6 +136,8 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == Activity.RESULT_OK) {
                 File f = new File(currentPhotoPath);
                 selectedImage.setImageURI(Uri.fromFile(f));
+                String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(f.lastModified()));
+                date_time.setText(lastModDate);
             }
         }
     }
