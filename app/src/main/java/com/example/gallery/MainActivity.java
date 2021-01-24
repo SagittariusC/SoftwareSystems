@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView selectedImage;
     Button camera;
     ImageButton left, right;
-    String currentPhotoPath;
+    String currentPhotoPath, caption;
     TextView date_time;
 
     @Override
