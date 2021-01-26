@@ -40,11 +40,13 @@
         android:layout_marginBottom="16dp"
         android:onClick="filter"
         android:text="Filter"
+        app:backgroundTint="@android:color/darker_gray"
         app:layout_constraintBottom_toTopOf="@+id/upload_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.492"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/snap" />
+        app:layout_constraintTop_toBottomOf="@+id/snap"
+        app:rippleColor="#FFFFFF" />
 
     <Button
         android:id="@+id/snap"
@@ -56,10 +58,12 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:text="Snap"
+        app:backgroundTint="@android:color/darker_gray"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.492"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edit_caption" />
+        app:layout_constraintTop_toBottomOf="@+id/edit_caption"
+        app:rippleColor="#FFFFFF" />
 
     <Button
         android:id="@+id/upload_button"
@@ -71,10 +75,12 @@
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
         android:text="Upload"
+        app:backgroundTint="@android:color/darker_gray"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.492"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:rippleColor="#FFFFFF" />
 
     <EditText
         android:id="@+id/edit_caption"

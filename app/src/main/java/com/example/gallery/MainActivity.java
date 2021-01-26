@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int CAMERA_REQUEST_CODE = 102;
     static final int REQUEST_TAKE_PHOTO = 1;
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
-    public int img_counter = 0;
+    private static int img_counter = 0;
     ImageView selectedImage;
     Button camera;
     ImageButton left, right;
