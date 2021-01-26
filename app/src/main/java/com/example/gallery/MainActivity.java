@@ -18,7 +18,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -61,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         if (files.length > 0) {
             img_counter = files.length - 1;
             selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+            String lastModDate = new SimpleDateFormat("dd/MM/yyyy_HH:mm:ss").format(new Date(files[img_counter].lastModified()));
             date_time.setText(lastModDate);
             caption.setText(updateCaption(files[img_counter].toString()));        }
 
@@ -86,14 +88,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        caption.setOnClickListener (new View.OnClickListener() {
+        caption.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
-            public void onClick (View v) {
-                String cap = caption.getText().toString();
-                File files[] = (getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles());
-                updatePhoto(files[img_counter].getPath(), cap);
-                InputMethodManager inputManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-                inputManager.hideSoftInputFromWindow(caption.getWindowToken(), 0);
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if(actionId== EditorInfo.IME_ACTION_DONE) {
+                    String cap = caption.getText().toString();
+                    File files[] = (getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles());
+                    updatePhoto(files[img_counter].getPath(), cap);
+                    InputMethodManager inputManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+                    inputManager.hideSoftInputFromWindow(caption.getWindowToken(), 0);
+                }
+                return false;
             }
         });
     }
@@ -103,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
         if (files.length > 1 && img_counter > 0) {
             img_counter--;
             selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+            String lastModDate = new SimpleDateFormat("dd/MM/yyyy_HH:mm:ss").format(new Date(files[img_counter].lastModified()));
             date_time.setText(lastModDate);
             caption.setText(updateCaption(files[img_counter].toString()));
         } else if (img_counter == 0) {
@@ -116,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
         if (files.length > 1 && img_counter < files.length - 1) {
             img_counter++;
             selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+            String lastModDate = new SimpleDateFormat("dd/MM/yyyy_HH:mm:ss").format(new Date(files[img_counter].lastModified()));
             date_time.setText(lastModDate);
             caption.setText(updateCaption(files[img_counter].toString()));
         } else if (img_counter == files.length - 1) {
@@ -155,14 +160,14 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == Activity.RESULT_OK) {
                 File f = new File(currentPhotoPath);
                 selectedImage.setImageURI(Uri.fromFile(f));
-                String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(f.lastModified()));
+                String lastModDate = new SimpleDateFormat("dd/MM/yyyy_HH:mm:ss").format(new Date(f.lastModified()));
                 date_time.setText(lastModDate);
                 caption.setText(updateCaption(currentPhotoPath));            }
         }
     }
 
     private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HH:mm:ss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(imageFileName,".jpg", storageDir);
@@ -208,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
         if (attr.length > 4) {
             ret = attr[1];
         } else {
-            ret = " ";
+            ret = "noCaption";
         }
         return ret;
     }
