@@ -18,7 +18,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -58,12 +60,23 @@ public class MainActivity extends AppCompatActivity {
         date_time = findViewById(R.id.timestamp);
         File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
 
+
         if (files.length > 0) {
             img_counter = files.length - 1;
-            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
-            date_time.setText(lastModDate);
-            caption.setText(updateCaption(files[img_counter].toString()));        }
+            updateCaption(files[img_counter]);
+        }
+
+        String searchResults;
+        if (savedInstanceState == null) {
+            Bundle extras = getIntent().getExtras();
+            if(extras == null) {
+                searchResults = null;
+            } else {
+                searchResults = extras.getString("CAPTION");
+            }
+        } else {
+            searchResults = (String) savedInstanceState.getSerializable("CAPTION");
+        }
 
         camera.setOnClickListener (new View.OnClickListener() {
             @Override
@@ -86,14 +99,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        caption.setOnClickListener (new View.OnClickListener() {
+        caption.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
-            public void onClick (View v) {
-                String cap = caption.getText().toString();
-                File files[] = (getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles());
-                updatePhoto(files[img_counter].getPath(), cap);
-                InputMethodManager inputManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-                inputManager.hideSoftInputFromWindow(caption.getWindowToken(), 0);
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if(actionId== EditorInfo.IME_ACTION_DONE) {
+                    String cap = caption.getText().toString();
+                    File files[] = (getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles());
+                    updatePhoto(files[img_counter].getPath(), cap);
+                    InputMethodManager inputManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+                    inputManager.hideSoftInputFromWindow(caption.getWindowToken(), 0);
+                }
+                return false;
             }
         });
     }
@@ -102,10 +118,8 @@ public class MainActivity extends AppCompatActivity {
         File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
         if (files.length > 1 && img_counter > 0) {
             img_counter--;
-            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
-            date_time.setText(lastModDate);
-            caption.setText(updateCaption(files[img_counter].toString()));
+            updateCaption(files[img_counter]);
+
         } else if (img_counter == 0) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
@@ -115,10 +129,7 @@ public class MainActivity extends AppCompatActivity {
         File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
         if (files.length > 1 && img_counter < files.length - 1) {
             img_counter++;
-            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
-            date_time.setText(lastModDate);
-            caption.setText(updateCaption(files[img_counter].toString()));
+            updateCaption(files[img_counter]);
         } else if (img_counter == files.length - 1) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
@@ -154,10 +165,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_TAKE_PHOTO) {
             if (resultCode == Activity.RESULT_OK) {
                 File f = new File(currentPhotoPath);
-                selectedImage.setImageURI(Uri.fromFile(f));
-                String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(f.lastModified()));
-                date_time.setText(lastModDate);
-                caption.setText(updateCaption(currentPhotoPath));            }
+                updateCaption(f);          }
         }
     }
 
@@ -202,14 +210,32 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public String updateCaption(String path) {
-        String[] attr = path.split("_");
-        String ret;
-        if (attr.length > 4) {
-            ret = attr[1];
+    public void updateCaption(File path) {
+        String path_str = path.getPath();
+        String date;
+
+        if (path_str == null || path_str =="") {
+            selectedImage.setImageResource(R.mipmap.ic_launcher);
+            date_time.setText("");
+            caption.setText("");
         } else {
-            ret = " ";
+            String[] attr = path_str.split("_");
+            selectedImage.setImageBitmap(BitmapFactory.decodeFile(path_str));
+            if (attr.length > 4) {
+                caption.setText(attr[1]);
+                date = attr[2];
+            } else {
+                caption.setText("");
+                date = attr[1];
+            }
+            if (date.length() == 8) {
+                String date_format = date.substring(0,4) + "/" + date.substring(4,6) + "/" + date.substring(6,8);
+                date_time.setText(date_format);
+            } else {
+                date_time.setText(date);
+            }
         }
-        return ret;
     }
+
+
 }
