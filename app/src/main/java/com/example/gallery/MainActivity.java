@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -89,7 +90,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick (View v) {
                 String cap = caption.getText().toString();
+                File files[] = (getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles());
                 updatePhoto(files[img_counter].getPath(), cap);
+                InputMethodManager inputManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+                inputManager.hideSoftInputFromWindow(caption.getWindowToken(), 0);
             }
         });
     }
@@ -186,11 +190,16 @@ public class MainActivity extends AppCompatActivity {
 
     public void updatePhoto(String path, String caption) {
         String[] attr = path.split("_");
-        if (attr.length >= 3) {
+        if (attr.length > 4) {
+            File to = new File(attr[0] + "_" + caption + "_" + attr[2] + "_" + attr[3] + "_" + attr[4]);
+            File from = new File(path);
+            from.renameTo(to);
+        }else{
             File to = new File(attr[0] + "_" + caption + "_" + attr[1] + "_" + attr[2] + "_" + attr[3]);
             File from = new File(path);
             from.renameTo(to);
         }
+
     }
 
     public String updateCaption(String path) {
