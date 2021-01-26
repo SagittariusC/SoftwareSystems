@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     ImageButton left, right;
     String currentPhotoPath;
     TextView date_time;
+    EditText caption;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,12 +53,16 @@ public class MainActivity extends AppCompatActivity {
         camera = findViewById(R.id.snap);
         left = findViewById(R.id.left_button);
         right = findViewById(R.id.right_button);
+        caption = findViewById(R.id.edit_caption);
         date_time = findViewById(R.id.timestamp);
         File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
-        img_counter = files.length - 1;
-        selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-        String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
-        date_time.setText(lastModDate);
+
+        if (files.length > 0) {
+            img_counter = files.length - 1;
+            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
+            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+            date_time.setText(lastModDate);
+        }
 
         camera.setOnClickListener (new View.OnClickListener() {
             @Override
@@ -79,6 +84,14 @@ public class MainActivity extends AppCompatActivity {
                 moveRight();
             }
         });
+
+        caption.setOnClickListener (new View.OnClickListener() {
+            @Override
+            public void onClick (View v) {
+                String cap = caption.getText().toString();
+                updatePhoto(files[img_counter].getPath(), cap);
+            }
+        });
     }
 
     private void moveRight() {
@@ -88,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
             selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
             String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
             date_time.setText(lastModDate);
+            caption.setText(updateCaption(files[img_counter].toString()));
         } else if (img_counter == 0) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
@@ -100,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
             selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
             String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
             date_time.setText(lastModDate);
+            caption.setText(updateCaption(files[img_counter].toString()));
         } else if (img_counter == files.length - 1) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
@@ -167,5 +182,25 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
         }
+    }
+
+    public void updatePhoto(String path, String caption) {
+        String[] attr = path.split("_");
+        if (attr.length >= 3) {
+            File to = new File(attr[0] + "_" + caption + "_" + attr[2] + "_" + attr[3]);
+            File from = new File(path);
+            from.renameTo(to);
+        }
+    }
+
+    public String updateCaption(String path) {
+        String[] attr = path.split("_");
+        String ret;
+        if (attr.length > 4) {
+            ret = attr[1];
+        } else {
+            ret = " ";
+        }
+        return ret;
     }
 }

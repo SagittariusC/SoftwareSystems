@@ -90,7 +90,6 @@
         android:layout_marginLeft="16dp"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="Caption"
         android:textStyle="italic"
         app:layout_constraintEnd_toStartOf="@+id/timestamp"
         app:layout_constraintHorizontal_bias="0.12"
