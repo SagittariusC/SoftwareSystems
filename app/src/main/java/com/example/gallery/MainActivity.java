@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
             selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
             String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
             date_time.setText(lastModDate);
+            updateCaption(files[img_counter].getPath());
         }
 
         camera.setOnClickListener (new View.OnClickListener() {
@@ -153,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
                 selectedImage.setImageURI(Uri.fromFile(f));
                 String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(f.lastModified()));
                 date_time.setText(lastModDate);
+                updateCaption(currentPhotoPath);
             }
         }
     }
