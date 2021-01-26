@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
     public void updatePhoto(String path, String caption) {
         String[] attr = path.split("_");
         if (attr.length >= 3) {
-            File to = new File(attr[0] + "_" + caption + "_" + attr[2] + "_" + attr[3]);
+            File to = new File(attr[0] + "_" + caption + "_" + attr[1] + "_" + attr[2] + "_" + attr[3]);
             File from = new File(path);
             from.renameTo(to);
         }
