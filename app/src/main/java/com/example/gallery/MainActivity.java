@@ -59,10 +59,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (files.length > 0) {
             img_counter = files.length - 1;
-            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
-            date_time.setText(lastModDate);
-            caption.setText(updateCaption(files[img_counter].toString()));        }
+            updatePhoto(files[img_counter]);
+        }
 
         camera.setOnClickListener (new View.OnClickListener() {
             @Override
@@ -89,19 +87,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick (View v) {
                 String cap = caption.getText().toString();
-                updatePhoto(files[img_counter].getPath(), cap);
+                updateFile(files[img_counter].getPath(), cap);
             }
         });
     }
 
     private void moveRight() {
         File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+
         if (files.length > 1 && img_counter > 0) {
             img_counter--;
-            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
-            date_time.setText(lastModDate);
-            caption.setText(updateCaption(files[img_counter].toString()));
+            updatePhoto(files[img_counter]);
+
         } else if (img_counter == 0) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
@@ -109,12 +106,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void moveLeft() {
         File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+
         if (files.length > 1 && img_counter < files.length - 1) {
             img_counter++;
-            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
-            date_time.setText(lastModDate);
-            caption.setText(updateCaption(files[img_counter].toString()));
+            updatePhoto(files[img_counter]);
+
         } else if (img_counter == files.length - 1) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
@@ -150,10 +146,8 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_TAKE_PHOTO) {
             if (resultCode == Activity.RESULT_OK) {
                 File f = new File(currentPhotoPath);
-                selectedImage.setImageURI(Uri.fromFile(f));
-                String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(f.lastModified()));
-                date_time.setText(lastModDate);
-                caption.setText(updateCaption(currentPhotoPath));            }
+                updatePhoto(f);
+           }
         }
     }
 
@@ -184,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void updatePhoto(String path, String caption) {
+    public void updateFile(String path, String caption) {
         String[] attr = path.split("_");
         if (attr.length >= 3) {
             File to = new File(attr[0] + "_" + caption + "_" + attr[1] + "_" + attr[2] + "_" + attr[3]);
@@ -193,14 +187,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public String updateCaption(String path) {
-        String[] attr = path.split("_");
-        String ret;
-        if (attr.length > 4) {
-            ret = attr[1];
+    private void updatePhoto(File path) {
+        String path_str = path.getPath();
+        String date;
+
+        if (path_str == null || path_str =="") {
+            selectedImage.setImageResource(R.mipmap.ic_launcher);
+            date_time.setText("");
+            caption.setText("");
         } else {
-            ret = " ";
+            String[] attr = path_str.split("_");
+            selectedImage.setImageBitmap(BitmapFactory.decodeFile(path_str));
+            if (attr.length > 4) {
+                caption.setText(attr[1]);
+                date = attr[2];
+            } else {
+                caption.setText("");
+                date = attr[1];
+            }
+            if (date.length() == 8) {
+                String date_format = date.substring(0,4) + "/" + date.substring(4,6) + "/" + date.substring(6,8);
+                date_time.setText(date_format);
+            } else {
+                date_time.setText(date);
+            }
         }
-        return ret;
     }
 }

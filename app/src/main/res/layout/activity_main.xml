@@ -108,11 +108,12 @@
 
     <EditText
         android:id="@+id/timestamp"
-        android:background="@null"
         android:layout_width="165dp"
         android:layout_height="46dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
+        android:background="@null"
+        android:clickable="false"
         android:ems="10"
         android:gravity="right"
         android:inputType="date"
