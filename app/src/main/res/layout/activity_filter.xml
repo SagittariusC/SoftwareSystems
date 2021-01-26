@@ -14,9 +14,11 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:ems="10"
-        android:inputType="date"
+        android:hint="@string/editText_Caption"
+        android:inputType="text"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextDate4" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextDate4"
+        android:autofillHints="" />
 
     <EditText
         android:id="@+id/editTextDate4"
@@ -26,9 +28,11 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:ems="10"
-        android:inputType="date"
+        android:hint="@string/editText_Location"
+        android:inputType="text"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextDate2" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextDate2"
+        android:autofillHints="" />
 
     <TextView
         android:id="@+id/textView4"
@@ -39,7 +43,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
-        android:text="Caption"
+        android:text="@string/textView_Caption"
         app:layout_constraintBottom_toBottomOf="@+id/editTextDate3"
         app:layout_constraintEnd_toStartOf="@+id/editTextDate3"
         app:layout_constraintStart_toStartOf="parent" />
@@ -53,7 +57,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
-        android:text="Location"
+        android:text="@string/textView_Location"
         app:layout_constraintBottom_toBottomOf="@+id/editTextDate4"
         app:layout_constraintEnd_toStartOf="@+id/editTextDate4"
         app:layout_constraintStart_toStartOf="parent" />
@@ -67,7 +71,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
-        android:text="Start Date"
+        android:text="@string/textView_Sdate"
         app:layout_constraintBottom_toBottomOf="@+id/editTextDate"
         app:layout_constraintEnd_toStartOf="@+id/editTextDate"
         app:layout_constraintStart_toStartOf="parent" />
@@ -81,7 +85,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
-        android:text="End Date"
+        android:text="@string/textView_Edate"
         app:layout_constraintBottom_toBottomOf="@+id/editTextDate2"
         app:layout_constraintEnd_toStartOf="@+id/editTextDate2"
         app:layout_constraintStart_toStartOf="parent" />
@@ -94,9 +98,11 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:ems="10"
+        android:hint="@string/editText_Sdate"
         android:inputType="date"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:autofillHints="" />
 
     <EditText
         android:id="@+id/editTextDate2"
@@ -106,9 +112,11 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:ems="10"
+        android:hint="@string/editText_Edate"
         android:inputType="date"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextDate" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextDate"
+        android:autofillHints="" />
 
     <Button
         android:id="@+id/button6"
@@ -118,7 +126,7 @@
         android:layout_marginEnd="80dp"
         android:layout_marginRight="80dp"
         android:onClick="cancel"
-        android:text="Cancel"
+        android:text="@string/button_Cancel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextDate3" />
 
@@ -129,7 +137,7 @@
         android:layout_marginStart="76dp"
         android:layout_marginLeft="76dp"
         android:layout_marginTop="44dp"
-        android:text="Search"
+        android:text="@string/button_Search"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextDate3" />
 
