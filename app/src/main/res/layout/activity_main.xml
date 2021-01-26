@@ -68,6 +68,7 @@
         android:layout_height="46dp"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
+        android:autofillHints=""
         android:ems="10"
         android:hint="@string/editText_Caption"
         android:inputType="textPersonName"
@@ -75,8 +76,7 @@
         app:layout_constraintEnd_toStartOf="@+id/timestamp"
         app:layout_constraintHorizontal_bias="0.12"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/displayImageView"
-        android:autofillHints="" />
+        app:layout_constraintTop_toBottomOf="@+id/displayImageView" />
 
     <ImageView
         android:id="@+id/displayImageView"

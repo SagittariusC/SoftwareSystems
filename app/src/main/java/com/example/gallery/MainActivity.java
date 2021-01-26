@@ -11,13 +11,11 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -42,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     ImageButton left, right;
     String currentPhotoPath, caption;
     TextView date_time;
+    EditText edit_caption;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
             selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
             String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
             date_time.setText(lastModDate);
+            updatePhoto(files[img_counter].toString(), ((EditText) findViewById(R.id.edit_caption)).getText().toString());
         } else if (img_counter == 0) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
             selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
             String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
             date_time.setText(lastModDate);
+            updatePhoto(files[img_counter].toString(), ((EditText) findViewById(R.id.edit_caption)).getText().toString());
         } else if (img_counter == files.length - 1) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
@@ -168,4 +169,13 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    public void updatePhoto(String path, String caption) { String[] attr = path.split("_");
+        if (attr.length >= 3) {
+            File to = new File(attr[0] + "_" + caption + "_" + attr[2] + "_" + attr[3]); File from = new File(path);
+            from.renameTo(to);
+
+        }
+    }
+
 }
