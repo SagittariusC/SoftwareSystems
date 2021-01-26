@@ -51,6 +51,48 @@ public class MainActivity extends AppCompatActivity {
                 askCameraPermissions();
             }
         });
+<<<<<<< Updated upstream
+=======
+
+        left.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick (View v) {
+                moveLeft();
+            }
+        });
+
+        right.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick (View v) {
+                moveRight();
+            }
+        });
+    }
+
+    private void moveRight() {
+        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+        if (files.length > 1 && img_counter > 0) {
+            img_counter--;
+            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
+            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+            date_time.setText(lastModDate);
+        } else if (img_counter == 0) {
+            Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void moveLeft() {
+        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+        if (files.length > 1 && img_counter < files.length - 1) {
+            img_counter++;
+            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
+            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+            date_time.setText(lastModDate);
+
+        } else if (img_counter == files.length - 1) {
+            Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
+        }
+>>>>>>> Stashed changes
     }
 
     public void filter(View view) {
