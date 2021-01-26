@@ -11,11 +11,13 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,13 +36,13 @@ public class MainActivity extends AppCompatActivity {
     public static final int CAMERA_REQUEST_CODE = 102;
     static final int REQUEST_TAKE_PHOTO = 1;
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
-    public int img_counter = 0;
+    private static int img_counter = 0;
     ImageView selectedImage;
     Button camera;
     ImageButton left, right;
-    String currentPhotoPath, caption;
+    String currentPhotoPath;
     TextView date_time;
-    EditText edit_caption;
+    EditText caption;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,12 +53,16 @@ public class MainActivity extends AppCompatActivity {
         camera = findViewById(R.id.snap);
         left = findViewById(R.id.left_button);
         right = findViewById(R.id.right_button);
+        caption = findViewById(R.id.edit_caption);
         date_time = findViewById(R.id.timestamp);
         File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
-        img_counter = files.length - 1;
-        selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-        String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
-        date_time.setText(lastModDate);
+
+        if (files.length > 0) {
+            img_counter = files.length - 1;
+            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
+            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+            date_time.setText(lastModDate);
+        }
 
         camera.setOnClickListener (new View.OnClickListener() {
             @Override
@@ -78,6 +84,14 @@ public class MainActivity extends AppCompatActivity {
                 moveRight();
             }
         });
+
+        caption.setOnClickListener (new View.OnClickListener() {
+            @Override
+            public void onClick (View v) {
+                String cap = caption.getText().toString();
+                updatePhoto(files[img_counter].getPath(), cap);
+            }
+        });
     }
 
     private void moveRight() {
@@ -87,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
             selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
             String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
             date_time.setText(lastModDate);
-            updatePhoto(files[img_counter].toString(), ((EditText) findViewById(R.id.edit_caption)).getText().toString());
+            caption.setText(updateCaption(files[img_counter].toString()));
         } else if (img_counter == 0) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
@@ -100,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
             selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
             String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
             date_time.setText(lastModDate);
-            updatePhoto(files[img_counter].toString(), ((EditText) findViewById(R.id.edit_caption)).getText().toString());
+            caption.setText(updateCaption(files[img_counter].toString()));
         } else if (img_counter == files.length - 1) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
@@ -170,12 +184,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void updatePhoto(String path, String caption) { String[] attr = path.split("_");
+    public void updatePhoto(String path, String caption) {
+        String[] attr = path.split("_");
         if (attr.length >= 3) {
-            File to = new File(attr[0] + "_" + caption + "_" + attr[2] + "_" + attr[3]); File from = new File(path);
+            File to = new File(attr[0] + "_" + caption + "_" + attr[2] + "_" + attr[3]);
+            File from = new File(path);
             from.renameTo(to);
-
         }
     }
 
+    public String updateCaption(String path) {
+        String[] attr = path.split("_");
+        String ret;
+        if (attr.length > 4) {
+            ret = attr[1];
+        } else {
+            ret = " ";
+        }
+        return ret;
+    }
 }
