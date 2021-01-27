@@ -13,19 +13,26 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
@@ -33,9 +40,14 @@ public class MainActivity extends AppCompatActivity {
     public static final int CAMERA_REQUEST_CODE = 102;
     static final int REQUEST_TAKE_PHOTO = 1;
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
+    private static int img_counter = 0;
     ImageView selectedImage;
     Button camera;
+    ImageButton left, right;
     String currentPhotoPath;
+    TextView date_time;
+    EditText caption;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +56,33 @@ public class MainActivity extends AppCompatActivity {
 
         selectedImage = findViewById(R.id.displayImageView);
         camera = findViewById(R.id.snap);
+        left = findViewById(R.id.left_button);
+        right = findViewById(R.id.right_button);
+        caption = findViewById(R.id.edit_caption);
+        date_time = findViewById(R.id.timestamp);
+        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+
+
+
+        if (files.length > 0) {
+            img_counter = files.length - 1;
+            updateCaption(files[img_counter]);
+        }
+
+        String[] searchResults = new String[3];
+        if (savedInstanceState == null) {
+            Bundle extras = getIntent().getExtras();
+            if(extras == null) {
+                searchResults = null;
+            } else {
+                searchResults[0] = extras.getString("STARTTIMESTAMP");
+                searchResults[1] = extras.getString("ENDTIMESTAMP");
+                searchResults[2] = extras.getString("CAPTION");
+                searchUpdate(files, searchResults);
+            }
+        } else {
+            searchResults[0] = (String) savedInstanceState.getSerializable("CAPTION");
+        }
 
         camera.setOnClickListener (new View.OnClickListener() {
             @Override
@@ -51,8 +90,6 @@ public class MainActivity extends AppCompatActivity {
                 askCameraPermissions();
             }
         });
-<<<<<<< Updated upstream
-=======
 
         left.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -67,15 +104,28 @@ public class MainActivity extends AppCompatActivity {
                 moveRight();
             }
         });
+
+        caption.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if(actionId== EditorInfo.IME_ACTION_DONE) {
+                    String cap = caption.getText().toString();
+                    File files[] = (getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles());
+                    updatePhoto(files[img_counter].getPath(), cap);
+                    InputMethodManager inputManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+                    inputManager.hideSoftInputFromWindow(caption.getWindowToken(), 0);
+                }
+                return false;
+            }
+        });
     }
 
     private void moveRight() {
         File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
         if (files.length > 1 && img_counter > 0) {
             img_counter--;
-            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
-            date_time.setText(lastModDate);
+            updateCaption(files[img_counter]);
+
         } else if (img_counter == 0) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
@@ -85,14 +135,10 @@ public class MainActivity extends AppCompatActivity {
         File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
         if (files.length > 1 && img_counter < files.length - 1) {
             img_counter++;
-            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
-            date_time.setText(lastModDate);
-
+            updateCaption(files[img_counter]);
         } else if (img_counter == files.length - 1) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
->>>>>>> Stashed changes
     }
 
     public void filter(View view) {
@@ -119,19 +165,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-//    private void openCamera() {
-//        Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//        startActivityForResult(camera, CAMERA_REQUEST_CODE);
-//    }
-
     @Override
     protected void onActivityResult (int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_TAKE_PHOTO) {
             if (resultCode == Activity.RESULT_OK) {
                 File f = new File(currentPhotoPath);
-                selectedImage.setImageURI(Uri.fromFile(f));
-            }
+                File files[] = (getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles());
+                img_counter = files.length - 1;
+                updateCaption(f);          }
         }
     }
 
@@ -161,4 +203,76 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    public void updatePhoto(String path, String caption) {
+        String[] attr = path.split("_");
+        if (attr.length > 4) {
+            File to = new File(attr[0] + "_" + attr[1] + "_" + attr[2] + "_" + caption +  "_" + attr[4]);
+            File from = new File(path);
+            from.renameTo(to);
+        }else{
+            File to = new File(attr[0] + "_" + attr[1] + "_" + attr[2] + "_" + caption + "_" + attr[3]);
+            File from = new File(path);
+            from.renameTo(to);
+        }
+
+    }
+
+    public void updateCaption(File path) {
+        String path_str = path.getPath();
+        String date;
+
+        if (path_str == null || path_str =="") {
+            selectedImage.setImageResource(R.mipmap.ic_launcher);
+            date_time.setText("");
+            caption.setText("");
+        } else {
+            String[] attr = path_str.split("_");
+            selectedImage.setImageBitmap(BitmapFactory.decodeFile(path_str));
+            if (attr.length > 4) {
+                caption.setText(attr[3]);
+                date = attr[1];
+            } else {
+                caption.setText("");
+                date = attr[1];
+            }
+            if (date.length() == 8) {
+                String date_format = date.substring(0,4) + "/" + date.substring(4,6) + "/" + date.substring(6,8);
+                date_time.setText(date_format);
+            } else {
+                date_time.setText(date);
+            }
+        }
+    }
+
+    public void searchUpdate (File[] files, String[] param_list){
+
+        int index = 0;
+        int foundIndex = -1;
+        for (File f : files){
+            String path = f.getPath();
+            String[] attr = path.split("_");
+            if((param_list[0].length() == 0) && (param_list[1].length() == 0)) {
+                if (attr[3].equals(param_list[2])) {
+                    foundIndex = index;
+                    break;
+                }
+            }else if ((Integer.parseInt(attr[1]) >= Integer.parseInt(param_list[0]) && Integer.parseInt(attr[1]) <= Integer.parseInt(param_list[1]))
+                    && (param_list[2].equals("") || attr[3].equals(param_list[2]))) {
+                foundIndex = index;
+                break;
+            }
+            index++;
+        }
+
+        if(foundIndex == -1){
+            Toast.makeText(this, "No pictures found", Toast.LENGTH_SHORT).show();
+        }else {
+            updateCaption(files[foundIndex]);
+        }
+
+    }
+
+
+
 }
