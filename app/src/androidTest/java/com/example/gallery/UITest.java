@@ -18,6 +18,14 @@ import androidx.test.espresso.intent.matcher.IntentMatchers;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.espresso.matcher.ViewMatchers;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+
 
 public class UITest {
     // IntentsTestRule is an extension of ActivityTestRule. IntentsTestRule sets up Espresso-Intents
@@ -39,11 +47,24 @@ public class UITest {
         Intents.intending(IntentMatchers.toPackage("com.android.camera2")).respondWith(result);
 
         // Now that we have the stub in place, click on the button in our app that launches into the Camera
-        Espresso.onView(ViewMatchers.withId(R.id.snap)).perform(ViewActions.click());
+        onView(withId(R.id.snap)).perform(click());
 
         // We can also validate that an intent resolving to the "camera" activity has been sent out by our app
          Intents.intended(IntentMatchers.toPackage("com.android.camera2"));
 
         // ... additional test steps and validation ...
+    }
+
+    @Test
+    public void searchCaption() throws InterruptedException {
+        Thread.sleep(1000);
+        onView(withId(R.id.filter_button)).perform(click());
+        Thread.sleep(1000);
+        onView(withId(R.id.captionText)).perform(typeText("owen"), closeSoftKeyboard());
+        Thread.sleep(1000);
+        onView(withId(R.id.searchButton)).perform(click());
+        Thread.sleep(10000);
+
+       // onView(withId(R.id.textView)).check(matches(withText("HELLO")));
     }
 }

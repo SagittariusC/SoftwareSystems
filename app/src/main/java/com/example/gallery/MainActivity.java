@@ -32,6 +32,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     TextView date_time;
     EditText caption;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,21 +63,25 @@ public class MainActivity extends AppCompatActivity {
         File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
 
 
+
         if (files.length > 0) {
             img_counter = files.length - 1;
             updateCaption(files[img_counter]);
         }
 
-        String searchResults;
+        String[] searchResults = new String[3];
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if(extras == null) {
                 searchResults = null;
             } else {
-                searchResults = extras.getString("CAPTION");
+                searchResults[0] = extras.getString("STARTTIMESTAMP");
+                searchResults[1] = extras.getString("ENDTIMESTAMP");
+                searchResults[2] = extras.getString("CAPTION");
+                searchUpdate(files, searchResults);
             }
         } else {
-            searchResults = (String) savedInstanceState.getSerializable("CAPTION");
+            searchResults[0] = (String) savedInstanceState.getSerializable("CAPTION");
         }
 
         camera.setOnClickListener (new View.OnClickListener() {
@@ -165,6 +171,8 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_TAKE_PHOTO) {
             if (resultCode == Activity.RESULT_OK) {
                 File f = new File(currentPhotoPath);
+                File files[] = (getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles());
+                img_counter = files.length - 1;
                 updateCaption(f);          }
         }
     }
@@ -199,11 +207,11 @@ public class MainActivity extends AppCompatActivity {
     public void updatePhoto(String path, String caption) {
         String[] attr = path.split("_");
         if (attr.length > 4) {
-            File to = new File(attr[0] + "_" + caption + "_" + attr[2] + "_" + attr[3] + "_" + attr[4]);
+            File to = new File(attr[0] + "_" + attr[1] + "_" + attr[2] + "_" + caption +  "_" + attr[4]);
             File from = new File(path);
             from.renameTo(to);
         }else{
-            File to = new File(attr[0] + "_" + caption + "_" + attr[1] + "_" + attr[2] + "_" + attr[3]);
+            File to = new File(attr[0] + "_" + attr[1] + "_" + attr[2] + "_" + caption + "_" + attr[3]);
             File from = new File(path);
             from.renameTo(to);
         }
@@ -222,8 +230,8 @@ public class MainActivity extends AppCompatActivity {
             String[] attr = path_str.split("_");
             selectedImage.setImageBitmap(BitmapFactory.decodeFile(path_str));
             if (attr.length > 4) {
-                caption.setText(attr[1]);
-                date = attr[2];
+                caption.setText(attr[3]);
+                date = attr[1];
             } else {
                 caption.setText("");
                 date = attr[1];
@@ -236,6 +244,35 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    public void searchUpdate (File[] files, String[] param_list){
+
+        int index = 0;
+        int foundIndex = -1;
+        for (File f : files){
+            String path = f.getPath();
+            String[] attr = path.split("_");
+            if((param_list[0].length() == 0) && (param_list[1].length() == 0)) {
+                if (attr[3].equals(param_list[2])) {
+                    foundIndex = index;
+                    break;
+                }
+            }else if ((Integer.parseInt(attr[1]) >= Integer.parseInt(param_list[0]) && Integer.parseInt(attr[1]) <= Integer.parseInt(param_list[1]))
+                    && (param_list[2].equals("") || attr[3].equals(param_list[2]))) {
+                foundIndex = index;
+                break;
+            }
+            index++;
+        }
+
+        if(foundIndex == -1){
+            Toast.makeText(this, "No pictures found", Toast.LENGTH_SHORT).show();
+        }else {
+            updateCaption(files[foundIndex]);
+        }
+
+    }
+
 
 
 }
