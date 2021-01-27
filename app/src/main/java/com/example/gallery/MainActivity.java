@@ -13,20 +13,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -39,13 +33,9 @@ public class MainActivity extends AppCompatActivity {
     public static final int CAMERA_REQUEST_CODE = 102;
     static final int REQUEST_TAKE_PHOTO = 1;
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
-    private static int img_counter = 0;
     ImageView selectedImage;
     Button camera;
-    ImageButton left, right;
     String currentPhotoPath;
-    TextView date_time;
-    EditText caption;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,18 +44,6 @@ public class MainActivity extends AppCompatActivity {
 
         selectedImage = findViewById(R.id.displayImageView);
         camera = findViewById(R.id.snap);
-        left = findViewById(R.id.left_button);
-        right = findViewById(R.id.right_button);
-        caption = findViewById(R.id.edit_caption);
-        date_time = findViewById(R.id.timestamp);
-        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
-
-        if (files.length > 0) {
-            img_counter = files.length - 1;
-            selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-            String lastModDate = new SimpleDateFormat("dd/MM/yyyy_HH:mm:ss").format(new Date(files[img_counter].lastModified()));
-            date_time.setText(lastModDate);
-            caption.setText(updateCaption(files[img_counter].toString()));        }
 
         camera.setOnClickListener (new View.OnClickListener() {
             @Override
@@ -73,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
                 askCameraPermissions();
             }
         });
+<<<<<<< Updated upstream
+=======
 
         left.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,20 +67,6 @@ public class MainActivity extends AppCompatActivity {
                 moveRight();
             }
         });
-
-        caption.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId== EditorInfo.IME_ACTION_DONE) {
-                    String cap = caption.getText().toString();
-                    File files[] = (getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles());
-                    updatePhoto(files[img_counter].getPath(), cap);
-                    InputMethodManager inputManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-                    inputManager.hideSoftInputFromWindow(caption.getWindowToken(), 0);
-                }
-                return false;
-            }
-        });
     }
 
     private void moveRight() {
@@ -108,9 +74,8 @@ public class MainActivity extends AppCompatActivity {
         if (files.length > 1 && img_counter > 0) {
             img_counter--;
             selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-            String lastModDate = new SimpleDateFormat("dd/MM/yyyy_HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
             date_time.setText(lastModDate);
-            caption.setText(updateCaption(files[img_counter].toString()));
         } else if (img_counter == 0) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
@@ -121,12 +86,13 @@ public class MainActivity extends AppCompatActivity {
         if (files.length > 1 && img_counter < files.length - 1) {
             img_counter++;
             selectedImage.setImageURI(Uri.fromFile(files[img_counter]));
-            String lastModDate = new SimpleDateFormat("dd/MM/yyyy_HH:mm:ss").format(new Date(files[img_counter].lastModified()));
+            String lastModDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(files[img_counter].lastModified()));
             date_time.setText(lastModDate);
-            caption.setText(updateCaption(files[img_counter].toString()));
+
         } else if (img_counter == files.length - 1) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
+>>>>>>> Stashed changes
     }
 
     public void filter(View view) {
@@ -153,6 +119,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+//    private void openCamera() {
+//        Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//        startActivityForResult(camera, CAMERA_REQUEST_CODE);
+//    }
+
     @Override
     protected void onActivityResult (int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -160,14 +131,12 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == Activity.RESULT_OK) {
                 File f = new File(currentPhotoPath);
                 selectedImage.setImageURI(Uri.fromFile(f));
-                String lastModDate = new SimpleDateFormat("dd/MM/yyyy_HH:mm:ss").format(new Date(f.lastModified()));
-                date_time.setText(lastModDate);
-                caption.setText(updateCaption(currentPhotoPath));            }
+            }
         }
     }
 
     private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HH:mm:ss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(imageFileName,".jpg", storageDir);
@@ -191,30 +160,5 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
         }
-    }
-
-    public void updatePhoto(String path, String caption) {
-        String[] attr = path.split("_");
-        if (attr.length > 4) {
-            File to = new File(attr[0] + "_" + caption + "_" + attr[2] + "_" + attr[3] + "_" + attr[4]);
-            File from = new File(path);
-            from.renameTo(to);
-        }else{
-            File to = new File(attr[0] + "_" + caption + "_" + attr[1] + "_" + attr[2] + "_" + attr[3]);
-            File from = new File(path);
-            from.renameTo(to);
-        }
-
-    }
-
-    public String updateCaption(String path) {
-        String[] attr = path.split("_");
-        String ret;
-        if (attr.length > 4) {
-            ret = attr[1];
-        } else {
-            ret = "noCaption";
-        }
-        return ret;
     }
 }
