@@ -2,6 +2,7 @@ package com.example.gallery;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -13,11 +14,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -30,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -85,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         camera.setOnClickListener (new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.Q)
             @Override
             public void onClick (View v) {
                 askCameraPermissions();
@@ -109,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if(actionId== EditorInfo.IME_ACTION_DONE) {
+                    img_counter = 0;
                     String cap = caption.getText().toString();
                     File files[] = (getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles());
                     updatePhoto(files[img_counter].getPath(), cap);
@@ -146,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     private void askCameraPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERM_CODE);
@@ -154,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     public void onRequestPermissionsResult (int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == CAMERA_PERM_CODE) {
@@ -165,18 +174,35 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onActivityResult (int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_TAKE_PHOTO) {
-            if (resultCode == Activity.RESULT_OK) {
-                File f = new File(currentPhotoPath);
-                File files[] = (getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles());
-                img_counter = files.length - 1;
-                updateCaption(f);          }
+    private File rotateImage(File oldImage, int degree) throws IOException {
+        String imageFileName = oldImage.getName();
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degree);
+        Bitmap loadedImg = BitmapFactory.decodeFile(oldImage.getPath());
+        Bitmap rotatedImg = Bitmap.createBitmap(loadedImg, 0, 0, loadedImg.getWidth(), loadedImg.getHeight(), matrix, true);
+        loadedImg.recycle();
+        oldImage.delete();
+
+        File newImage = new File(storageDir, imageFileName);
+        if (!newImage.exists()) {
+            Log.d("path", newImage.toString());
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(newImage);
+                rotatedImg.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                fos.flush();
+                fos.close();
+            } catch (java.io.IOException e) {
+                e.printStackTrace();
+            }
         }
+        return newImage;
+
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     private File createImageFile() throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
@@ -187,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
         return image;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
@@ -203,6 +230,47 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    @Override
+    protected void onActivityResult (int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_TAKE_PHOTO) {
+            if (resultCode == Activity.RESULT_OK) {
+
+                ExifInterface ei = null;
+                try {
+                    ei = new ExifInterface(currentPhotoPath);
+                } catch (IOException e) {
+                    //e.printStackTrace();
+                }
+                File f = new File(currentPhotoPath);
+
+                int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
+                    try {
+                        f = rotateImage(f, 90);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) {
+                    try {
+                        f = rotateImage(f, 180);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) {
+                    try {
+                        f = rotateImage(f, 270);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                updateCaption(f);
+            }
+        }
+    }
+
+
 
     public void updatePhoto(String path, String caption) {
         String[] attr = path.split("_");

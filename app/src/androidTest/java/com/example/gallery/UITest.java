@@ -64,7 +64,6 @@ public class UITest {
         Thread.sleep(1000);
         onView(withId(R.id.searchButton)).perform(click());
         Thread.sleep(10000);
-
-       // onView(withId(R.id.textView)).check(matches(withText("HELLO")));
+        
     }
 }
