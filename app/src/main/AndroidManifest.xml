@@ -20,6 +20,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Gallery"
+        android:largeHeap="true"
         tools:ignore="ExtraText">
         <meta-data
             android:name="com.google.android.actions"

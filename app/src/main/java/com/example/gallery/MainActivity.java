@@ -181,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
         Matrix matrix = new Matrix();
         matrix.postRotate(degree);
         Bitmap loadedImg = BitmapFactory.decodeFile(oldImage.getPath());
+
         Bitmap rotatedImg = Bitmap.createBitmap(loadedImg, 0, 0, loadedImg.getWidth(), loadedImg.getHeight(), matrix, true);
         loadedImg.recycle();
         oldImage.delete();
