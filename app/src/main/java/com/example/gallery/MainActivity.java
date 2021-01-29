@@ -181,7 +181,6 @@ public class MainActivity extends AppCompatActivity {
         Matrix matrix = new Matrix();
         matrix.postRotate(degree);
         Bitmap loadedImg = BitmapFactory.decodeFile(oldImage.getPath());
-
         Bitmap rotatedImg = Bitmap.createBitmap(loadedImg, 0, 0, loadedImg.getWidth(), loadedImg.getHeight(), matrix, true);
         loadedImg.recycle();
         oldImage.delete();
@@ -247,6 +246,8 @@ public class MainActivity extends AppCompatActivity {
                 File f = new File(currentPhotoPath);
 
                 int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                String lat = ei.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+                String lng = ei.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
                 if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
                     try {
                         f = rotateImage(f, 90);
