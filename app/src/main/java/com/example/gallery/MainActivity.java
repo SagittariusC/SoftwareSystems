@@ -178,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
 
         Matrix matrix = new Matrix();
         matrix.postRotate(degree);
+        ExifInterface Exif = new ExifInterface(oldImage.getPath());
         Bitmap loadedImg = BitmapFactory.decodeFile(oldImage.getPath());
         Bitmap rotatedImg = Bitmap.createBitmap(loadedImg, 0, 0, loadedImg.getWidth(), loadedImg.getHeight(), matrix, true);
         oldImage.delete();
@@ -191,10 +192,11 @@ public class MainActivity extends AppCompatActivity {
                 rotatedImg.compress(Bitmap.CompressFormat.JPEG, 100, fos);
                 fos.flush();
                 fos.close();
-            } catch (java.io.IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        Exif.saveAttributes();
         loadedImg.recycle();
         rotatedImg.recycle();
         return newImage;
@@ -243,6 +245,8 @@ public class MainActivity extends AppCompatActivity {
                 File f = new File(currentPhotoPath);
 
                 int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+
                 if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
                     try {
                         f = rotateImage(f, 90);
@@ -262,7 +266,18 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
+
+                try {
+                    ei = new ExifInterface(currentPhotoPath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                //add geotag using exif
+
+
                 updateCaption(f);
+
             }
         }
     }
