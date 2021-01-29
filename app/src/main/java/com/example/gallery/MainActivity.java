@@ -153,7 +153,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.Q)
     private void askCameraPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERM_CODE);
@@ -162,7 +161,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     public void onRequestPermissionsResult (int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == CAMERA_PERM_CODE) {
@@ -182,7 +180,6 @@ public class MainActivity extends AppCompatActivity {
         matrix.postRotate(degree);
         Bitmap loadedImg = BitmapFactory.decodeFile(oldImage.getPath());
         Bitmap rotatedImg = Bitmap.createBitmap(loadedImg, 0, 0, loadedImg.getWidth(), loadedImg.getHeight(), matrix, true);
-        loadedImg.recycle();
         oldImage.delete();
 
         File newImage = new File(storageDir, imageFileName);
@@ -198,11 +195,12 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+        loadedImg.recycle();
+        rotatedImg.recycle();
         return newImage;
 
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.Q)
     private File createImageFile() throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
@@ -213,7 +211,6 @@ public class MainActivity extends AppCompatActivity {
         return image;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.Q)
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
@@ -241,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     ei = new ExifInterface(currentPhotoPath);
                 } catch (IOException e) {
-                    //e.printStackTrace();
+                    e.printStackTrace();
                 }
                 File f = new File(currentPhotoPath);
 
