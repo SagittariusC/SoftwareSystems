@@ -10,7 +10,10 @@ import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.app.Activity;
+<<<<<<< Updated upstream
 import android.app.Dialog;
+=======
+>>>>>>> Stashed changes
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -87,7 +90,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         date_time = findViewById(R.id.timestamp);
         File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
 
-
+        ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        }, 0);
 
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -223,6 +229,73 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    public void geoTag(File imageFile){
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Location location = null;
+            LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            location = (Location) lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if(location == null) {
+                return;
+            }
+
+            try {
+                ExifInterface exif = new ExifInterface(imageFile.getPath());
+                //String latitudeStr = "90/1,12/1,30/1";
+                double lat = location.getLatitude();
+                double alat = Math.abs(lat);
+                String dms = Location.convert(alat, Location.FORMAT_SECONDS);
+                String[] splits = dms.split(":");
+                String[] secnds = (splits[2]).split("\\.");
+                String seconds;
+                if(secnds.length==0)
+                {
+                    seconds = splits[2];
+                }
+                else
+                {
+                    seconds = secnds[0];
+                }
+
+                String latitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
+                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, latitudeStr);
+
+                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, lat>0?"N":"S");
+
+                double lon = location.getLongitude();
+                double alon = Math.abs(lon);
+
+
+                dms = Location.convert(alon, Location.FORMAT_SECONDS);
+                splits = dms.split(":");
+                secnds = (splits[2]).split("\\.");
+
+                if(secnds.length==0)
+                {
+                    seconds = splits[2];
+                }
+                else
+                {
+                    seconds = secnds[0];
+                }
+                String longitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
+
+
+                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, longitudeStr);
+                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, lon>0?"E":"W");
+
+                exif.saveAttributes();
+            } catch (IOException e) {
+                Log.e("PictureActivity", e.getLocalizedMessage());
+            }
+
+        }
+
+
+
+
+    }
+
     private File rotateImage(File oldImage, int degree) throws IOException {
         String imageFileName = oldImage.getName();
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
@@ -324,6 +397,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 }
 
+<<<<<<< Updated upstream
 
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     Location location = null;
@@ -337,13 +411,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 try {
                     ei = new ExifInterface(f.getPath());
+=======
+                geoTag(f);
+
+                try {
+                    ei = new ExifInterface(currentPhotoPath);
+>>>>>>> Stashed changes
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
+<<<<<<< Updated upstream
                 float[] latLong = new float[2];
                 ei.getLatLong(latLong);
 
+=======
+>>>>>>> Stashed changes
                 updateCaption(f);
 
 
