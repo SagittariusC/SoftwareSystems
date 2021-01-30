@@ -10,11 +10,15 @@ import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.location.Location;
+import android.location.LocationManager;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
@@ -23,7 +27,9 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -33,6 +39,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -40,12 +57,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     public static final int CAMERA_PERM_CODE = 101;
     public static final int CAMERA_REQUEST_CODE = 102;
     static final int REQUEST_TAKE_PHOTO = 1;
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
     private static int img_counter = 0;
+    private GoogleMap map;
+    private MapView mapView;
+
     ImageView selectedImage;
     Button camera;
     ImageButton left, right;
@@ -69,6 +89,19 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+        ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        }, 0);
+
+
+        mapView = (MapView) findViewById(R.id.idLocationMap);
+        mapView.onCreate(savedInstanceState);
+
+        mapView.getMapAsync(this);
+        MapsInitializer.initialize(this);
+        mapView.onResume();
+
         if (files.length > 0) {
             img_counter = files.length - 1;
             updateCaption(files[img_counter]);
@@ -77,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         String[] searchResults = new String[3];
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
-            if(extras == null) {
+            if (extras == null) {
                 searchResults = null;
             } else {
                 searchResults[0] = extras.getString("STARTTIMESTAMP");
@@ -89,24 +122,23 @@ public class MainActivity extends AppCompatActivity {
             searchResults[0] = (String) savedInstanceState.getSerializable("CAPTION");
         }
 
-        camera.setOnClickListener (new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.Q)
+        camera.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View v) {
+            public void onClick(View v) {
                 askCameraPermissions();
             }
         });
 
         left.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View v) {
+            public void onClick(View v) {
                 moveLeft();
             }
         });
 
         right.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View v) {
+            public void onClick(View v) {
                 moveRight();
             }
         });
@@ -114,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
         caption.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId== EditorInfo.IME_ACTION_DONE) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
                     img_counter = 0;
                     String cap = caption.getText().toString();
                     File files[] = (getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles());
@@ -125,6 +157,25 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        MapsInitializer.initialize(getApplicationContext());
+        //LatLng class is google provided class to get latiude and longitude of location.
+        //GpsTracker is helper class to get the details for current location latitude and longitude.
+        LatLng LLlocation = null;
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Location location = null;
+            LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            location = (Location) lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            LLlocation = new LatLng(location.getLatitude(), location.getLongitude());
+        }
+        map = googleMap;
+        map.addMarker(new MarkerOptions().position(LLlocation).title("Marker position"));
+        map.moveCamera(CameraUpdateFactory.newLatLng(LLlocation));
+        map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        mapView.onResume();
     }
 
     private void moveRight() {
@@ -155,19 +206,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void askCameraPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERM_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERM_CODE);
         } else {
             dispatchTakePictureIntent();
         }
     }
 
     @Override
-    public void onRequestPermissionsResult (int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == CAMERA_PERM_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 dispatchTakePictureIntent();
             } else {
-                Toast.makeText(this,"Camera Permission is Required to use the Camera", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Camera Permission is Required to use the Camera", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -185,7 +236,6 @@ public class MainActivity extends AppCompatActivity {
 
         File newImage = new File(storageDir, imageFileName);
         if (!newImage.exists()) {
-            Log.d("path", newImage.toString());
             FileOutputStream fos = null;
             try {
                 fos = new FileOutputStream(newImage);
@@ -207,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(imageFileName,".jpg", storageDir);
+        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
 
         currentPhotoPath = image.getAbsolutePath();
         return image;
@@ -220,7 +270,8 @@ public class MainActivity extends AppCompatActivity {
             File photoFile = null;
             try {
                 photoFile = createImageFile();
-            } catch (IOException ex) {}
+            } catch (IOException ex) {
+            }
 
             if (photoFile != null) {
                 Uri photoURI = FileProvider.getUriForFile(this, AUTHORITY, photoFile);
@@ -230,11 +281,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
-    protected void onActivityResult (int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_TAKE_PHOTO) {
             if (resultCode == Activity.RESULT_OK) {
+
+
+                File f = new File(currentPhotoPath);
+                //geoTag(f.getAbsolutePath(),latitude,longitude);
+
 
                 ExifInterface ei = null;
                 try {
@@ -242,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                File f = new File(currentPhotoPath);
+
 
                 int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
 
@@ -267,21 +324,68 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
+
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    Location location = null;
+                    LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    location = (Location) lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    double longitude= location.getLongitude();
+                    double latitude = location.getLatitude();
+                    geoTag(f, latitude, longitude);
+
+                }
+
                 try {
-                    ei = new ExifInterface(currentPhotoPath);
+                    ei = new ExifInterface(f.getPath());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-                //add geotag using exif
-
+                float[] latLong = new float[2];
+                ei.getLatLong(latLong);
 
                 updateCaption(f);
+
 
             }
         }
     }
 
+    public void geoTag(File imageFile, double latitude, double longitude){
+        ExifInterface exif;
+
+        try {
+            exif = new ExifInterface(imageFile.getPath());
+            int num1Lat = (int)Math.floor(latitude);
+            int num2Lat = (int)Math.floor((latitude - num1Lat) * 60);
+            double num3Lat = (latitude - ((double)num1Lat+((double)num2Lat/60))) * 3600000;
+
+            int num1Lon = (int)Math.floor(longitude);
+            int num2Lon = (int)Math.floor((longitude - num1Lon) * 60);
+            double num3Lon = (longitude - ((double)num1Lon+((double)num2Lon/60))) * 3600000;
+
+            exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, num1Lat+"/1,"+num2Lat+"/1,"+num3Lat+"/1000");
+            exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, num1Lon+"/1,"+num2Lon+"/1,"+num3Lon+"/1000");
+
+
+            if (latitude > 0) {
+                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, "N");
+            } else {
+                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, "S");
+            }
+
+            if (longitude > 0) {
+                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, "E");
+            } else {
+                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, "W");
+            }
+
+            exif.saveAttributes();
+        } catch (IOException e) {
+            Log.e("PictureActivity", e.getLocalizedMessage());
+        }
+
+    }
 
 
     public void updatePhoto(String path, String caption) {
