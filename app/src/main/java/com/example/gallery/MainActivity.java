@@ -10,10 +10,6 @@ import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.app.Activity;
-<<<<<<< Updated upstream
-import android.app.Dialog;
-=======
->>>>>>> Stashed changes
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -51,6 +47,7 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.File;
@@ -66,8 +63,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     static final int REQUEST_TAKE_PHOTO = 1;
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
     private static int img_counter = 0;
-    private GoogleMap map;
-    private MapView mapView;
+
+    private MapView mMapView;
+    private GoogleMap mGoogleMap;
+    private LatLng ImageLocation = new LatLng(49, -122);
+    private LatLngBounds mMapBoundary;
+    public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
 
     ImageView selectedImage;
     Button camera;
@@ -90,23 +91,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         date_time = findViewById(R.id.timestamp);
         File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
 
-        ActivityCompat.requestPermissions(this, new String[]{
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-        }, 0);
+        mMapView = findViewById(R.id.idLocationMap);
+        Bundle mapViewBundle = null;
+        if (savedInstanceState != null) {
+            mapViewBundle = savedInstanceState.getBundle(MAPVIEW_BUNDLE_KEY);
+        }
+        mMapView.onCreate(mapViewBundle);
+        mMapView.getMapAsync(this);
 
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION
         }, 0);
-
-
-        mapView = (MapView) findViewById(R.id.idLocationMap);
-        mapView.onCreate(savedInstanceState);
-
-        mapView.getMapAsync(this);
-        MapsInitializer.initialize(this);
-        mapView.onResume();
 
         if (files.length > 0) {
             img_counter = files.length - 1;
@@ -166,23 +162,95 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-        MapsInitializer.initialize(getApplicationContext());
-        //LatLng class is google provided class to get latiude and longitude of location.
-        //GpsTracker is helper class to get the details for current location latitude and longitude.
-        LatLng LLlocation = null;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Location location = null;
-            LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            location = (Location) lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            LLlocation = new LatLng(location.getLatitude(), location.getLongitude());
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        Bundle mapViewBundle = outState.getBundle(MAPVIEW_BUNDLE_KEY);
+        if (mapViewBundle == null) {
+            mapViewBundle = new Bundle();
+            outState.putBundle(MAPVIEW_BUNDLE_KEY, mapViewBundle);
         }
-        map = googleMap;
-        map.addMarker(new MarkerOptions().position(LLlocation).title("Marker position"));
-        map.moveCamera(CameraUpdateFactory.newLatLng(LLlocation));
-        map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        mapView.onResume();
+        mMapView.onSaveInstanceState(mapViewBundle);
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mMapView.onResume();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mMapView.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mMapView.onStop();
+    }
+
+    @Override
+    public void onMapReady(GoogleMap map) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        map.setMyLocationEnabled(true);
+        mGoogleMap = map;
+        mGoogleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+
+                // Set a boundary to start
+                double bottomBoundary = ImageLocation.latitude - .01;
+                double leftBoundary = ImageLocation.longitude - .01;
+                double topBoundary = ImageLocation.latitude + .01;
+                double rightBoundary = ImageLocation.longitude + .01;
+
+                mMapBoundary = new LatLngBounds(
+                        new LatLng(bottomBoundary, leftBoundary),
+                        new LatLng(topBoundary, rightBoundary)
+                );
+                mGoogleMap.clear();
+                mGoogleMap.addMarker(new MarkerOptions()
+                        .position(ImageLocation)
+                        .title("ImageLocation"));
+
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary, 0));
+                mMapView.onResume();
+            }
+        });
+
+
+
+    }
+
+    @Override
+    public void onPause() {
+        mMapView.onPause();
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        mMapView.onDestroy();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mMapView.onLowMemory();
+    }
+
 
     private void moveRight() {
         File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
@@ -290,10 +358,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
 
         }
-
-
-
-
     }
 
     private File rotateImage(File oldImage, int degree) throws IOException {
@@ -397,79 +461,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 }
 
-<<<<<<< Updated upstream
 
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    Location location = null;
-                    LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                    location = (Location) lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    double longitude= location.getLongitude();
-                    double latitude = location.getLatitude();
-                    geoTag(f, latitude, longitude);
-
-                }
-
-                try {
-                    ei = new ExifInterface(f.getPath());
-=======
                 geoTag(f);
 
                 try {
                     ei = new ExifInterface(currentPhotoPath);
->>>>>>> Stashed changes
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-<<<<<<< Updated upstream
                 float[] latLong = new float[2];
                 ei.getLatLong(latLong);
 
-=======
->>>>>>> Stashed changes
                 updateCaption(f);
-
-
             }
         }
     }
-
-    public void geoTag(File imageFile, double latitude, double longitude){
-        ExifInterface exif;
-
-        try {
-            exif = new ExifInterface(imageFile.getPath());
-            int num1Lat = (int)Math.floor(latitude);
-            int num2Lat = (int)Math.floor((latitude - num1Lat) * 60);
-            double num3Lat = (latitude - ((double)num1Lat+((double)num2Lat/60))) * 3600000;
-
-            int num1Lon = (int)Math.floor(longitude);
-            int num2Lon = (int)Math.floor((longitude - num1Lon) * 60);
-            double num3Lon = (longitude - ((double)num1Lon+((double)num2Lon/60))) * 3600000;
-
-            exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, num1Lat+"/1,"+num2Lat+"/1,"+num3Lat+"/1000");
-            exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, num1Lon+"/1,"+num2Lon+"/1,"+num3Lon+"/1000");
-
-
-            if (latitude > 0) {
-                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, "N");
-            } else {
-                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, "S");
-            }
-
-            if (longitude > 0) {
-                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, "E");
-            } else {
-                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, "W");
-            }
-
-            exif.saveAttributes();
-        } catch (IOException e) {
-            Log.e("PictureActivity", e.getLocalizedMessage());
-        }
-
-    }
-
 
     public void updatePhoto(String path, String caption) {
         String[] attr = path.split("_");
@@ -488,6 +495,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void updateCaption(File path) {
         String path_str = path.getPath();
         String date;
+
+        ExifInterface ei = null;
+        try {
+            ei = new ExifInterface(path.getPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        float[] latLong = new float[2];
+        ei.getLatLong(latLong);
+
+        ImageLocation = new LatLng(latLong[0], latLong[1]);
+        mMapView.getMapAsync(this);
 
         if (path_str == null || path_str =="") {
             selectedImage.setImageResource(R.mipmap.ic_launcher);

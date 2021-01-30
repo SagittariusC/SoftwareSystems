@@ -44,19 +44,12 @@
         android:id="@+id/snap"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
-        android:layout_marginBottom="84dp"
+        android:layout_marginTop="36dp"
         android:text="@string/button_Snap"
-        app:layout_constraintBottom_toTopOf="@+id/MapView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-<<<<<<< Updated upstream
-        app:layout_constraintTop_toBottomOf="@+id/map" />
-=======
-        app:layout_constraintTop_toBottomOf="@+id/edit_caption"
-        app:layout_constraintVertical_bias="0.124" />
->>>>>>> Stashed changes
+        app:layout_constraintTop_toBottomOf="@+id/edit_caption" />
 
     <Button
         android:id="@+id/upload_button"
@@ -142,25 +135,17 @@
         tools:ignore="MissingConstraints" />
 
     <com.google.android.gms.maps.MapView
-<<<<<<< Updated upstream
         android:id="@+id/idLocationMap"
         android:layout_width="377dp"
         android:layout_height="138dp"
         android:layout_margin="5dp"
-        app:layout_constraintBottom_toTopOf="@+id/snap"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edit_caption"
-        app:layout_constraintVertical_bias="0.176" />
-=======
-        android:id="@+id/MapView"
-        android:layout_width="403dp"
-        android:layout_height="104dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginTop="120dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
->>>>>>> Stashed changes
+        app:layout_constraintHorizontal_bias="0.529"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/edit_caption"
+        app:layout_constraintVertical_bias="1.0" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
