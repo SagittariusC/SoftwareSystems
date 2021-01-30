@@ -76,12 +76,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     String currentPhotoPath;
     TextView date_time;
     EditText caption;
+    File files[] = null;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
 
         selectedImage = findViewById(R.id.displayImageView);
         camera = findViewById(R.id.snap);
@@ -89,7 +91,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         right = findViewById(R.id.right_button);
         caption = findViewById(R.id.edit_caption);
         date_time = findViewById(R.id.timestamp);
-        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
 
         mMapView = findViewById(R.id.idLocationMap);
         Bundle mapViewBundle = null;
@@ -149,9 +150,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    img_counter = 0;
+
                     String cap = caption.getText().toString();
-                    File files[] = (getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles());
                     updatePhoto(files[img_counter].getPath(), cap);
                     InputMethodManager inputManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
                     inputManager.hideSoftInputFromWindow(caption.getWindowToken(), 0);
@@ -253,7 +253,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     private void moveRight() {
-        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
         if (files.length > 1 && img_counter > 0) {
             img_counter--;
             updateCaption(files[img_counter]);
@@ -264,7 +263,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void moveLeft() {
-        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
         if (files.length > 1 && img_counter < files.length - 1) {
             img_counter++;
             updateCaption(files[img_counter]);
@@ -489,6 +487,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             File from = new File(path);
             from.renameTo(to);
         }
+        files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
 
     }
 
