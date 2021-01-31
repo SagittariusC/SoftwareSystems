@@ -26,9 +26,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -38,14 +36,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -54,7 +48,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -77,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     TextView date_time;
     EditText caption;
     File files[] = null;
+    boolean newImage = false;
+    File newImageFile = null;
 
 
     @Override
@@ -150,9 +145,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-
                     String cap = caption.getText().toString();
-                    updatePhoto(files[img_counter].getPath(), cap);
+                    if(newImage){
+                        updatePhoto(newImageFile.getPath(), cap);
+                        newImage = false;
+                    }else{
+                        updatePhoto(files[img_counter].getPath(), cap);
+                    }
                     InputMethodManager inputManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
                     inputManager.hideSoftInputFromWindow(caption.getWindowToken(), 0);
                 }
@@ -229,8 +228,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-
-
     }
 
     @Override
@@ -253,6 +250,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     private void moveRight() {
+        newImage = false;
         if (files.length > 1 && img_counter > 0) {
             img_counter--;
             updateCaption(files[img_counter]);
@@ -263,6 +261,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void moveLeft() {
+        newImage = false;
         if (files.length > 1 && img_counter < files.length - 1) {
             img_counter++;
             updateCaption(files[img_counter]);
@@ -423,10 +422,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (requestCode == REQUEST_TAKE_PHOTO) {
             if (resultCode == Activity.RESULT_OK) {
 
-
-                File f = new File(currentPhotoPath);
-                //geoTag(f.getAbsolutePath(),latitude,longitude);
-
+                newImage = true;
+                newImageFile = new File(currentPhotoPath);
 
                 ExifInterface ei = null;
                 try {
@@ -441,37 +438,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
                     try {
-                        f = rotateImage(f, 90);
+                        newImageFile = rotateImage(newImageFile, 90);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 } else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) {
                     try {
-                        f = rotateImage(f, 180);
+                        newImageFile = rotateImage(newImageFile, 180);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 } else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) {
                     try {
-                        f = rotateImage(f, 270);
+                        newImageFile = rotateImage(newImageFile, 270);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-
-
-                geoTag(f);
-
-                try {
-                    ei = new ExifInterface(currentPhotoPath);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                float[] latLong = new float[2];
-                ei.getLatLong(latLong);
-
-                updateCaption(f);
+                files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+                geoTag(newImageFile);
+                updateCaption(newImageFile);
             }
         }
     }
@@ -487,17 +473,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             File from = new File(path);
             from.renameTo(to);
         }
+
         files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+
 
     }
 
-    public void updateCaption(File path) {
-        String path_str = path.getPath();
+    public void updateCaption(File f) {
+        String path_str = f.getPath();
         String date;
 
         ExifInterface ei = null;
         try {
-            ei = new ExifInterface(path.getPath());
+            ei = new ExifInterface(f.getPath());
         } catch (IOException e) {
             e.printStackTrace();
         }
