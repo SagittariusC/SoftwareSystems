@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (files.length > 0) {
             img_counter = files.length - 1;
-            updatePhoto(files[img_counter]);
+            updateCaption(files[img_counter]);
         }
 
         camera.setOnClickListener (new View.OnClickListener() {
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (files.length > 1 && img_counter > 0) {
             img_counter--;
-            updatePhoto(files[img_counter]);
+            updateCaption(files[img_counter]);
 
         } else if (img_counter == 0) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (files.length > 1 && img_counter < files.length - 1) {
             img_counter++;
-            updatePhoto(files[img_counter]);
+            updateCaption(files[img_counter]);
 
         } else if (img_counter == files.length - 1) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_TAKE_PHOTO) {
             if (resultCode == Activity.RESULT_OK) {
                 File f = new File(currentPhotoPath);
-                updatePhoto(f);
+                updateCaption(f);
            }
         }
     }
@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void updatePhoto(File path) {
+    private void updateCaption(File path) {
         String path_str = path.getPath();
         String date;
 
