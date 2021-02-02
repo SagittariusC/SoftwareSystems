@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private MapView mMapView;
     private GoogleMap mGoogleMap;
-    private LatLng ImageLocation = new LatLng(49, -122);
+    private LatLng ImageLocation = new LatLng(0, 0);
     private LatLngBounds mMapBoundary;
     public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
 
@@ -220,11 +220,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         new LatLng(topBoundary, rightBoundary)
                 );
                 mGoogleMap.clear();
-                mGoogleMap.addMarker(new MarkerOptions()
-                        .position(ImageLocation)
-                        .title(files[img_counter].getName()));
+                if(files.length > 0){
+                    mGoogleMap.addMarker(new MarkerOptions()
+                            .position(ImageLocation)
+                            .title(files[img_counter].getName()));
+                    mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary, 0));
+                }
 
-                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary, 0));
                 mMapView.onResume();
             }
         });
