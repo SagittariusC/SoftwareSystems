@@ -10,11 +10,14 @@ import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.location.Location;
+import android.location.LocationManager;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
@@ -33,31 +36,50 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     public static final int CAMERA_PERM_CODE = 101;
     public static final int CAMERA_REQUEST_CODE = 102;
     static final int REQUEST_TAKE_PHOTO = 1;
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
     private static int img_counter = 0;
+
+    private MapView mMapView;
+    private GoogleMap mGoogleMap;
+    private LatLng ImageLocation = new LatLng(49, -122);
+    private LatLngBounds mMapBoundary;
+    public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
+
     ImageView selectedImage;
     Button camera;
     ImageButton left, right;
     String currentPhotoPath;
     TextView date_time;
     EditText caption;
+    File files[] = null;
+    boolean newImage = false;
+    File newImageFile = null;
+    int[] searchList = null;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
 
         selectedImage = findViewById(R.id.displayImageView);
         camera = findViewById(R.id.snap);
@@ -65,48 +87,57 @@ public class MainActivity extends AppCompatActivity {
         right = findViewById(R.id.right_button);
         caption = findViewById(R.id.edit_caption);
         date_time = findViewById(R.id.timestamp);
-        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
 
+        mMapView = findViewById(R.id.idLocationMap);
+        Bundle mapViewBundle = null;
+        if (savedInstanceState != null) {
+            mapViewBundle = savedInstanceState.getBundle(MAPVIEW_BUNDLE_KEY);
+        }
+        mMapView.onCreate(mapViewBundle);
+        mMapView.getMapAsync(this);
 
+        ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        }, 0);
 
         if (files.length > 0) {
             img_counter = files.length - 1;
             updateCaption(files[img_counter]);
         }
 
-        String[] searchResults = new String[3];
+        String[] searchParams = new String[3];
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
-            if(extras == null) {
-                searchResults = null;
+            if (extras == null) {
+                searchParams = null;
             } else {
-                searchResults[0] = extras.getString("STARTTIMESTAMP");
-                searchResults[1] = extras.getString("ENDTIMESTAMP");
-                searchResults[2] = extras.getString("CAPTION");
-                searchUpdate(files, searchResults);
+                searchParams[0] = extras.getString("STARTTIMESTAMP");
+                searchParams[1] = extras.getString("ENDTIMESTAMP");
+                searchParams[2] = extras.getString("CAPTION");
+                searchUpdate(files, searchParams);
             }
         } else {
-            searchResults[0] = (String) savedInstanceState.getSerializable("CAPTION");
+            searchParams[0] = (String) savedInstanceState.getSerializable("CAPTION");
         }
 
-        camera.setOnClickListener (new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.Q)
+        camera.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View v) {
+            public void onClick(View v) {
                 askCameraPermissions();
             }
         });
 
         left.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View v) {
+            public void onClick(View v) {
                 moveLeft();
             }
         });
 
         right.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View v) {
+            public void onClick(View v) {
                 moveRight();
             }
         });
@@ -114,11 +145,14 @@ public class MainActivity extends AppCompatActivity {
         caption.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId== EditorInfo.IME_ACTION_DONE) {
-                    img_counter = 0;
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
                     String cap = caption.getText().toString();
-                    File files[] = (getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles());
-                    updatePhoto(files[img_counter].getPath(), cap);
+                    if(newImage){
+                        updatePhoto(newImageFile.getPath(), cap);
+                        newImage = false;
+                    }else{
+                        updatePhoto(files[img_counter].getPath(), cap);
+                    }
                     InputMethodManager inputManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
                     inputManager.hideSoftInputFromWindow(caption.getWindowToken(), 0);
                 }
@@ -127,8 +161,97 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        Bundle mapViewBundle = outState.getBundle(MAPVIEW_BUNDLE_KEY);
+        if (mapViewBundle == null) {
+            mapViewBundle = new Bundle();
+            outState.putBundle(MAPVIEW_BUNDLE_KEY, mapViewBundle);
+        }
+        mMapView.onSaveInstanceState(mapViewBundle);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mMapView.onResume();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mMapView.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mMapView.onStop();
+    }
+
+    @Override
+    public void onMapReady(GoogleMap map) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        map.setMyLocationEnabled(true);
+        mGoogleMap = map;
+        mGoogleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+
+                // Set a boundary to start
+                double bottomBoundary = ImageLocation.latitude - .01;
+                double leftBoundary = ImageLocation.longitude - .01;
+                double topBoundary = ImageLocation.latitude + .01;
+                double rightBoundary = ImageLocation.longitude + .01;
+
+                mMapBoundary = new LatLngBounds(
+                        new LatLng(bottomBoundary, leftBoundary),
+                        new LatLng(topBoundary, rightBoundary)
+                );
+                mGoogleMap.clear();
+                mGoogleMap.addMarker(new MarkerOptions()
+                        .position(ImageLocation)
+                        .title(files[img_counter].getName()));
+
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary, 0));
+                mMapView.onResume();
+            }
+        });
+
+    }
+
+    @Override
+    public void onPause() {
+        mMapView.onPause();
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        mMapView.onDestroy();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mMapView.onLowMemory();
+    }
+
+
     private void moveRight() {
-        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+        newImage = false;
         if (files.length > 1 && img_counter > 0) {
             img_counter--;
             updateCaption(files[img_counter]);
@@ -139,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void moveLeft() {
-        File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+        newImage = false;
         if (files.length > 1 && img_counter < files.length - 1) {
             img_counter++;
             updateCaption(files[img_counter]);
@@ -155,20 +278,83 @@ public class MainActivity extends AppCompatActivity {
 
     private void askCameraPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERM_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERM_CODE);
         } else {
             dispatchTakePictureIntent();
         }
     }
 
     @Override
-    public void onRequestPermissionsResult (int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == CAMERA_PERM_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 dispatchTakePictureIntent();
             } else {
-                Toast.makeText(this,"Camera Permission is Required to use the Camera", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Camera Permission is Required to use the Camera", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    public void geoTag(File imageFile){
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Location location = null;
+            LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            location = (Location) lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if(location == null) {
+                return;
+            }
+
+            try {
+                ExifInterface exif = new ExifInterface(imageFile.getPath());
+                //String latitudeStr = "90/1,12/1,30/1";
+                double lat = location.getLatitude();
+                double alat = Math.abs(lat);
+                String dms = Location.convert(alat, Location.FORMAT_SECONDS);
+                String[] splits = dms.split(":");
+                String[] secnds = (splits[2]).split("\\.");
+                String seconds;
+                if(secnds.length==0)
+                {
+                    seconds = splits[2];
+                }
+                else
+                {
+                    seconds = secnds[0];
+                }
+
+                String latitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
+                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, latitudeStr);
+
+                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, lat>0?"N":"S");
+
+                double lon = location.getLongitude();
+                double alon = Math.abs(lon);
+
+
+                dms = Location.convert(alon, Location.FORMAT_SECONDS);
+                splits = dms.split(":");
+                secnds = (splits[2]).split("\\.");
+
+                if(secnds.length==0)
+                {
+                    seconds = splits[2];
+                }
+                else
+                {
+                    seconds = secnds[0];
+                }
+                String longitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
+
+
+                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, longitudeStr);
+                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, lon>0?"E":"W");
+
+                exif.saveAttributes();
+            } catch (IOException e) {
+                Log.e("PictureActivity", e.getLocalizedMessage());
+            }
+
         }
     }
 
@@ -185,7 +371,6 @@ public class MainActivity extends AppCompatActivity {
 
         File newImage = new File(storageDir, imageFileName);
         if (!newImage.exists()) {
-            Log.d("path", newImage.toString());
             FileOutputStream fos = null;
             try {
                 fos = new FileOutputStream(newImage);
@@ -207,7 +392,7 @@ public class MainActivity extends AppCompatActivity {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(imageFileName,".jpg", storageDir);
+        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
 
         currentPhotoPath = image.getAbsolutePath();
         return image;
@@ -220,7 +405,8 @@ public class MainActivity extends AppCompatActivity {
             File photoFile = null;
             try {
                 photoFile = createImageFile();
-            } catch (IOException ex) {}
+            } catch (IOException ex) {
+            }
 
             if (photoFile != null) {
                 Uri photoURI = FileProvider.getUriForFile(this, AUTHORITY, photoFile);
@@ -230,11 +416,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
-    protected void onActivityResult (int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_TAKE_PHOTO) {
             if (resultCode == Activity.RESULT_OK) {
+
+                newImage = true;
+                newImageFile = new File(currentPhotoPath);
 
                 ExifInterface ei = null;
                 try {
@@ -242,47 +432,36 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                File f = new File(currentPhotoPath);
+
 
                 int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
 
 
                 if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
                     try {
-                        f = rotateImage(f, 90);
+                        newImageFile = rotateImage(newImageFile, 90);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 } else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) {
                     try {
-                        f = rotateImage(f, 180);
+                        newImageFile = rotateImage(newImageFile, 180);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 } else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) {
                     try {
-                        f = rotateImage(f, 270);
+                        newImageFile = rotateImage(newImageFile, 270);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-
-                try {
-                    ei = new ExifInterface(currentPhotoPath);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                //add geotag using exif
-
-
-                updateCaption(f);
-
+                files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+                geoTag(newImageFile);
+                updateCaption(newImageFile);
             }
         }
     }
-
-
 
     public void updatePhoto(String path, String caption) {
         String[] attr = path.split("_");
@@ -296,11 +475,27 @@ public class MainActivity extends AppCompatActivity {
             from.renameTo(to);
         }
 
+        files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+
+
     }
 
-    public void updateCaption(File path) {
-        String path_str = path.getPath();
+    public void updateCaption(File f) {
+        String path_str = f.getPath();
         String date;
+
+        ExifInterface ei = null;
+        try {
+            ei = new ExifInterface(f.getPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        float[] latLong = new float[2];
+        ei.getLatLong(latLong);
+
+        ImageLocation = new LatLng(latLong[0], latLong[1]);
+        mMapView.getMapAsync(this);
 
         if (path_str == null || path_str =="") {
             selectedImage.setImageResource(R.mipmap.ic_launcher);
