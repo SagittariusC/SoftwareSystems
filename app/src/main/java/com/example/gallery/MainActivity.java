@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     File files[] = null;
     boolean newImage = false;
     File newImageFile = null;
+    int[] searchList = null;
 
 
     @Override
@@ -105,19 +106,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             updateCaption(files[img_counter]);
         }
 
-        String[] searchResults = new String[3];
+        String[] searchParams = new String[3];
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if (extras == null) {
-                searchResults = null;
+                searchParams = null;
             } else {
-                searchResults[0] = extras.getString("STARTTIMESTAMP");
-                searchResults[1] = extras.getString("ENDTIMESTAMP");
-                searchResults[2] = extras.getString("CAPTION");
-                searchUpdate(files, searchResults);
+                searchParams[0] = extras.getString("STARTTIMESTAMP");
+                searchParams[1] = extras.getString("ENDTIMESTAMP");
+                searchParams[2] = extras.getString("CAPTION");
+                searchUpdate(files, searchParams);
             }
         } else {
-            searchResults[0] = (String) savedInstanceState.getSerializable("CAPTION");
+            searchParams[0] = (String) savedInstanceState.getSerializable("CAPTION");
         }
 
         camera.setOnClickListener(new View.OnClickListener() {
@@ -221,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mGoogleMap.clear();
                 mGoogleMap.addMarker(new MarkerOptions()
                         .position(ImageLocation)
-                        .title("ImageLocation"));
+                        .title(files[img_counter].getName()));
 
                 mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary, 0));
                 mMapView.onResume();
