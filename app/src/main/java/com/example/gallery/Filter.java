@@ -45,6 +45,7 @@ public class Filter extends AppCompatActivity {
     }
 
     public void go(final View v) {
+
         Intent i = new Intent(this, MainActivity.class);
         EditText from = (EditText) findViewById(R.id.startDateText);
         EditText to = (EditText) findViewById(R.id.endDateText);
@@ -52,7 +53,6 @@ public class Filter extends AppCompatActivity {
         i.putExtra("STARTTIMESTAMP", from.getText() != null ? from.getText().toString() : "");
         i.putExtra("ENDTIMESTAMP", to.getText() != null ? to.getText().toString() : "");
         i.putExtra("CAPTION", caption.getText() != null ? caption.getText().toString() : "");
-        //setResult(RESULT_OK, i);
         startActivity(i);
 
     }
