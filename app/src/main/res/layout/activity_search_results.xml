@@ -20,7 +20,7 @@
         android:gravity="right"
         android:inputType="date"
         android:textSize="12sp"
-        app:layout_constraintBottom_toTopOf="@+id/mapView"
+        app:layout_constraintBottom_toTopOf="@+id/idSearchLocationMap"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/searchImageView" />
 
@@ -62,7 +62,7 @@
         app:layout_constraintTop_toTopOf="@+id/searchImageView" />
 
     <com.google.android.gms.maps.MapView
-        android:id="@+id/mapView"
+        android:id="@+id/idSearchLocationMap"
         android:layout_width="374dp"
         android:layout_height="222dp"
         android:layout_marginStart="16dp"
@@ -86,7 +86,7 @@
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
         android:text="@string/textView_Caption"
-        app:layout_constraintBottom_toTopOf="@+id/mapView"
+        app:layout_constraintBottom_toTopOf="@+id/idSearchLocationMap"
         app:layout_constraintEnd_toStartOf="@+id/timestamp2"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
