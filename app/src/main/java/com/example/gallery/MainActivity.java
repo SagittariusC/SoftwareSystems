@@ -76,7 +76,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     File newImageFile = null;
     int[] searchList = null;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -553,15 +552,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         int index = 0;
         int foundIndex = -1;
-        for (File f : files){
+        for (File f : files) {
             String path = f.getPath();
             String[] attr = path.split("_");
-            if((param_list[0].length() == 0) && (param_list[1].length() == 0)) {
+            if ((param_list[0].length() == 0) && (param_list[1].length() == 0)) {
                 if (attr[3].equals(param_list[2])) {
                     foundIndex = index;
                     break;
                 }
-            }else if ((Integer.parseInt(attr[1]) >= Integer.parseInt(param_list[0]) && Integer.parseInt(attr[1]) <= Integer.parseInt(param_list[1]))
+            } else if ((Integer.parseInt(attr[1]) >= Integer.parseInt(param_list[0]) && Integer.parseInt(attr[1]) <= Integer.parseInt(param_list[1]))
                     && (param_list[2].equals("") || attr[3].equals(param_list[2]))) {
                 foundIndex = index;
                 break;
@@ -569,14 +568,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             index++;
         }
 
-        if(foundIndex == -1){
+        if (foundIndex == -1){
             Toast.makeText(this, "No pictures found", Toast.LENGTH_SHORT).show();
-        }else {
+        } else {
             updateCaption(files[foundIndex]);
         }
-
     }
-
-
-
 }
