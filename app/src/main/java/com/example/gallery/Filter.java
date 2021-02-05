@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -57,14 +58,13 @@ public class Filter extends AppCompatActivity {
         EditText BottomRightLat = (EditText) findViewById(R.id.BottomRightLat);
         EditText BottomRightLong = (EditText) findViewById(R.id.BottomRightLong);
 
-
-        i.putExtra("STARTTIMESTAMP", fromDate.getText() != null ? fromDate.getText().toString() : "");
-        i.putExtra("ENDTIMESTAMP", toDate.getText() != null ? toDate.getText().toString() : "");
-        i.putExtra("CAPTION", caption.getText() != null ? caption.getText().toString() : "");
-        i.putExtra("TOPLEFTLAT", TopLeftLat.getText() != null ? TopLeftLat.getText().toString() : "");
-        i.putExtra("TOPLEFTLONG", TopLeftLong.getText() != null ? TopLeftLong.getText().toString() : "");
-        i.putExtra("BOTTOMRIGHTLAT", BottomRightLat.getText() != null ? BottomRightLat.getText().toString() : "");
-        i.putExtra("BOTTOMRIGHTLONG", BottomRightLong.getText() != null ? BottomRightLong.getText().toString() : "");
+        i.putExtra("STARTTIMESTAMP", fromDate.length() != 0 ? fromDate.getText().toString() : "0");
+        i.putExtra("ENDTIMESTAMP", toDate.length() != 0 ? toDate.getText().toString() : "30000000");
+        i.putExtra("CAPTION", caption.length() != 0 ? caption.getText().toString() : "");
+        i.putExtra("TOPLEFTLAT", TopLeftLat.length() != 0 ? Float.parseFloat(TopLeftLat.getText().toString()) : "1000");
+        i.putExtra("TOPLEFTLONG", TopLeftLong.length() != 0 ? Float.parseFloat(TopLeftLong.getText().toString()) : "-1000");
+        i.putExtra("BOTTOMRIGHTLAT", BottomRightLat.length() != 0 ? Float.parseFloat(BottomRightLat.getText().toString()) : "-1000");
+        i.putExtra("BOTTOMRIGHTLONG", BottomRightLong.length() != 0 ? Float.parseFloat(BottomRightLong.getText().toString()) : "1000");
 
         startActivity(i);
 
