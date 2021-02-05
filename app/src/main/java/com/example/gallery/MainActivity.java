@@ -43,6 +43,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     ImageView selectedImage;
     Button camera;
     ImageButton left, right;
+    FloatingActionButton share;
     String currentPhotoPath;
     TextView date_time;
     EditText caption;
@@ -85,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         camera = findViewById(R.id.snap);
         left = findViewById(R.id.left_button);
         right = findViewById(R.id.right_button);
+        share = findViewById(R.id.share_button);
         caption = findViewById(R.id.edit_caption);
         date_time = findViewById(R.id.timestamp);
 
@@ -159,6 +162,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 return false;
             }
         });
+
+        share.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick (View v) {
+                shareFunction();
+            }
+        });
+    }
+
+    public void shareFunction() {
+        try {
+            File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+            File current_file = files[img_counter];
+            //Toast.makeText(this, files[img_counter].toString(), Toast.LENGTH_SHORT).show();
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            Uri photoURI = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider", current_file);
+            shareIntent.setType("image/jpeg");
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            shareIntent.putExtra(Intent.EXTRA_STREAM, photoURI);
+            startActivity(Intent.createChooser(shareIntent, "Share Image Using"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
