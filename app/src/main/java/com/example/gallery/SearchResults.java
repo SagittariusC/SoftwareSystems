@@ -77,7 +77,7 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
             updateCaption(files[img_counter]);
         }
 
-        String[] searchParams = new String[3];
+        String[] searchParams = new String[7];
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if (extras == null) {
@@ -86,6 +86,11 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
                 searchParams[0] = extras.getString("STARTTIMESTAMP");
                 searchParams[1] = extras.getString("ENDTIMESTAMP");
                 searchParams[2] = extras.getString("CAPTION");
+                searchParams[3] = extras.getString("TOPLEFTLAT");
+                searchParams[4] = extras.getString("TOPLEFTLONG");
+                searchParams[5] = extras.getString("BOTTOMRIGHTLAT");
+                searchParams[6] = extras.getString("BOTTOMRIGHTLONG");
+
                 searchUpdate(files, searchParams);
             }
         } else {
