@@ -58,8 +58,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public static final int CAMERA_REQUEST_CODE = 102;
     static final int REQUEST_TAKE_PHOTO = 1;
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
-
     private static int img_counter = 0;
+
     private MapView mMapView;
     private GoogleMap mGoogleMap;
     private LatLng ImageLocation = new LatLng(49, -122);
@@ -75,7 +75,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     File files[] = null;
     boolean newImage = false;
     File newImageFile = null;
-    int[] searchList = null;
 
 
     @Override
