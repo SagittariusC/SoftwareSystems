@@ -36,6 +36,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.gallery.BuildConfig;
+import com.example.gallery.Filter;
+import com.example.gallery.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -74,7 +77,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     File files[] = null;
     boolean newImage = false;
     File newImageFile = null;
-    int[] searchList = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,10 +116,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (extras == null) {
                 searchParams = null;
             } else {
-                searchParams[0] = extras.getString("STARTTIMESTAMP");
-                searchParams[1] = extras.getString("ENDTIMESTAMP");
-                searchParams[2] = extras.getString("CAPTION");
-                searchUpdate(files, searchParams);
+                //searchParams[0] = extras.getString("STARTTIMESTAMP");
+                //searchParams[1] = extras.getString("ENDTIMESTAMP");
+                //searchParams[2] = extras.getString("CAPTION");
+                //searchUpdate(files, searchParams);
+                img_counter = extras.getInt("SearchedImgCounter");
+                updateCaption(files[img_counter]);
             }
         } else {
             searchParams[0] = (String) savedInstanceState.getSerializable("CAPTION");
@@ -409,6 +413,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 e.printStackTrace();
             }
         }
+        Exif.setAttribute("Orientation", "0");
         Exif.saveAttributes();
         loadedImg.recycle();
         rotatedImg.recycle();
@@ -444,7 +449,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

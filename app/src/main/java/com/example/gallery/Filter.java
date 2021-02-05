@@ -45,14 +45,27 @@ public class Filter extends AppCompatActivity {
     }
 
     public void go(final View v) {
-        Intent i = new Intent(this, MainActivity.class);
-        EditText from = (EditText) findViewById(R.id.startDateText);
-        EditText to = (EditText) findViewById(R.id.endDateText);
+
+
+
+        Intent i = new Intent(this, SearchResults.class);
+        EditText fromDate = (EditText) findViewById(R.id.startDateText);
+        EditText toDate = (EditText) findViewById(R.id.endDateText);
         EditText caption = (EditText) findViewById(R.id.captionText);
-        i.putExtra("STARTTIMESTAMP", from.getText() != null ? from.getText().toString() : "");
-        i.putExtra("ENDTIMESTAMP", to.getText() != null ? to.getText().toString() : "");
+        EditText TopLeftLat = (EditText) findViewById(R.id.TopLeftLat);
+        EditText TopLeftLong = (EditText) findViewById(R.id.TopLeftLong);
+        EditText BottomRightLat = (EditText) findViewById(R.id.BottomRightLat);
+        EditText BottomRightLong = (EditText) findViewById(R.id.BottomRightLong);
+
+
+        i.putExtra("STARTTIMESTAMP", fromDate.getText() != null ? fromDate.getText().toString() : "");
+        i.putExtra("ENDTIMESTAMP", toDate.getText() != null ? toDate.getText().toString() : "");
         i.putExtra("CAPTION", caption.getText() != null ? caption.getText().toString() : "");
-        //setResult(RESULT_OK, i);
+        i.putExtra("TOPLEFTLAT", TopLeftLat.getText() != null ? TopLeftLat.getText().toString() : "");
+        i.putExtra("TOPLEFTLONG", TopLeftLong.getText() != null ? TopLeftLong.getText().toString() : "");
+        i.putExtra("BOTTOMRIGHTLAT", BottomRightLat.getText() != null ? BottomRightLat.getText().toString() : "");
+        i.putExtra("BOTTOMRIGHTLONG", BottomRightLong.getText() != null ? BottomRightLong.getText().toString() : "");
+
         startActivity(i);
 
     }
