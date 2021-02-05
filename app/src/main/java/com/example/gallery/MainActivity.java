@@ -115,10 +115,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (extras == null) {
                 searchParams = null;
             } else {
-                searchParams[0] = extras.getString("STARTTIMESTAMP");
-                searchParams[1] = extras.getString("ENDTIMESTAMP");
-                searchParams[2] = extras.getString("CAPTION");
-                searchUpdate(files, searchParams);
+                //searchParams[0] = extras.getString("STARTTIMESTAMP");
+                //searchParams[1] = extras.getString("ENDTIMESTAMP");
+                //searchParams[2] = extras.getString("CAPTION");
+                //searchUpdate(files, searchParams);
+                img_counter = extras.getInt("SearchedImgCounter");
+                updateCaption(files[img_counter]);
             }
         } else {
             searchParams[0] = (String) savedInstanceState.getSerializable("CAPTION");
