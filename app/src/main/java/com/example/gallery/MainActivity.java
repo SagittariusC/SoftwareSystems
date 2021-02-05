@@ -410,6 +410,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 e.printStackTrace();
             }
         }
+        Exif.setAttribute("Orientation", "0");
         Exif.saveAttributes();
         loadedImg.recycle();
         rotatedImg.recycle();
