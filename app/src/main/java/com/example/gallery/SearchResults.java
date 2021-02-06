@@ -288,11 +288,10 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
             } else {
                 if(attr[3].contains(extras.getString("CAPTION")) || extras.getString("CAPTION").length() == 0) {
                     if ((Integer.parseInt(attr[1]) >= Integer.parseInt(extras.getString("STARTTIMESTAMP"))) && Integer.parseInt(attr[1]) <= Integer.parseInt(extras.getString("ENDTIMESTAMP"))){
-                        // TODO: 2/5/2021 Add checks for no latlng given
-                        if(latLong[0] > extras.getFloat("TOPLEFTLAT") && latLong[0] < extras.getFloat("BOTTOMRIGHTLAT")) {
+                        if(latLong[0] < extras.getFloat("TOPLEFTLAT") && latLong[0] > extras.getFloat("BOTTOMRIGHTLAT")) {
                             if(latLong[1] > extras.getFloat("TOPLEFTLONG") && latLong[1] < extras.getFloat("BOTTOMRIGHTLONG")){
                                 ResultList.add(index);
-                                if(index == 0){
+                                if(ResultList.size() == 1){
                                     maxLat = latLong[0];
                                     minLat = latLong[0];
                                     maxLong = latLong[1];
@@ -309,28 +308,29 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
                                         minLong = latLong[1];
                                     }
                                 }
-
                             }
                         }
                     }
                 }
             }
             index++;
-
         }
 
         if(ResultList.size() == 0){
-            Toast.makeText(this, "No pictures found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "0 pictures found", Toast.LENGTH_SHORT).show();
             finish();
         }else if(ResultList.size() == 1){
+            Toast.makeText(this,"1 picture found", Toast.LENGTH_SHORT).show();
             Intent i = new Intent(SearchResults.this, MainActivity.class);
             i.putExtra("SELECTEDSEARCHIMAGE", ResultList.get(0));
             startActivity(i);
         }else{
+            Toast.makeText(this,ResultList.size() + " pictures found", Toast.LENGTH_SHORT).show();
             updateCaption(files[ResultList.get(0)]);
         }
 
     }
+
 
     public void updateCaption(File f) {
         String path_str = f.getPath();
