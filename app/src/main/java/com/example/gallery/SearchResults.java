@@ -1,9 +1,11 @@
 package com.example.gallery;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
@@ -21,12 +23,16 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SearchResults extends AppCompatActivity implements OnMapReadyCallback {
     private static int img_counter = 0;
@@ -36,16 +42,15 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
     private LatLng ImageLocation = new LatLng(0, 0);
     private LatLngBounds mMapBoundary;
     public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
+    private ImageView selectedImage;
+    private ImageButton left, right;
+    private TextView date_time, caption;
+    private File files[] = null;
+    private boolean newImage = false;
+    private List<Integer> ResultList = new ArrayList<>();
 
-    ImageView selectedImage;
-    Button camera;
-    ImageButton left, right;
-    String currentPhotoPath;
-    TextView date_time, caption;
-    File files[] = null;
-    boolean newImage = false;
-    File newImageFile = null;
-    int[] searchList = null;
+    private float maxLat = 0, minLat = 0, maxLong = 0, minLong = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,43 +64,24 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
         caption = findViewById(R.id.view_caption);
         date_time = findViewById(R.id.timestamp2);
 
-//        mMapView = findViewById(R.id.idLocationMap);
-//        Bundle mapViewBundle = null;
-//        if (savedInstanceState != null) {
-//            mapViewBundle = savedInstanceState.getBundle(MAPVIEW_BUNDLE_KEY);
-//        }
-//        mMapView.onCreate(mapViewBundle);
-//        mMapView.getMapAsync((OnMapReadyCallback) this);
+        mMapView = findViewById(R.id.idSearchLocationMap);
+        mMapView.onCreate(savedInstanceState != null ? savedInstanceState.getBundle(MAPVIEW_BUNDLE_KEY) : null);
+        mMapView.getMapAsync((OnMapReadyCallback) this);
 
         ActivityCompat.requestPermissions(this, new String[]{
                 android.Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION
         }, 0);
 
-        if (files.length > 0) {
-            img_counter = files.length - 1;
-            updateCaption(files[img_counter]);
-        }
+        searchUpdate(files);
 
-        String[] searchParams = new String[7];
-        if (savedInstanceState == null) {
-            Bundle extras = getIntent().getExtras();
-            if (extras == null) {
-                searchParams = null;
-            } else {
-                searchParams[0] = extras.getString("STARTTIMESTAMP");
-                searchParams[1] = extras.getString("ENDTIMESTAMP");
-                searchParams[2] = extras.getString("CAPTION");
-                searchParams[3] = extras.getString("TOPLEFTLAT");
-                searchParams[4] = extras.getString("TOPLEFTLONG");
-                searchParams[5] = extras.getString("BOTTOMRIGHTLAT");
-                searchParams[6] = extras.getString("BOTTOMRIGHTLONG");
+        //if (files.length > 0) {
+        //    img_counter = files.length - 1;
+        //    updateCaption(files[img_counter]);
+       // }
 
-                searchUpdate(files, searchParams);
-            }
-        } else {
-            searchParams[0] = (String) savedInstanceState.getSerializable("CAPTION");
-        }
+
+
 
         left.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,6 +96,15 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
                 moveRight();
             }
         });
+        selectedImage.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(SearchResults.this, MainActivity.class);
+                i.putExtra("SELECTEDSEARCHIMAGE", ResultList.get(img_counter));
+                startActivity(i);
+            }
+
+        });
     }
 
     @Override
@@ -122,6 +117,7 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
             outState.putBundle(MAPVIEW_BUNDLE_KEY, mapViewBundle);
         }
         mMapView.onSaveInstanceState(mapViewBundle);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -161,22 +157,54 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
             public void onMapLoaded() {
 
                 // Set a boundary to start
-                double bottomBoundary = ImageLocation.latitude - .01;
-                double leftBoundary = ImageLocation.longitude - .01;
-                double topBoundary = ImageLocation.latitude + .01;
-                double rightBoundary = ImageLocation.longitude + .01;
+                Bundle extras = getIntent().getExtras();
+
+                //double bottomBoundary = extras.getFloat("TOPLEFTLAT");
+                //double leftBoundary = extras.getFloat("TOPLEFTLONG");
+                //double topBoundary = extras.getFloat("BOTTOMRIGHTLAT");
+                //double rightBoundary = extras.getFloat("BOTTOMRIGHTLONG");
+
+                double bottomBoundary = minLat - 0.2;
+                double leftBoundary = minLong - 0.2;
+                double topBoundary = maxLat + 0.2;
+                double rightBoundary = maxLong + 0.2;
 
                 mMapBoundary = new LatLngBounds(
                         new LatLng(bottomBoundary, leftBoundary),
                         new LatLng(topBoundary, rightBoundary)
                 );
                 mGoogleMap.clear();
-                if(files.length > 0){
-                    mGoogleMap.addMarker(new MarkerOptions()
+                float[] latLong = new float[2];
+                ExifInterface Exif = null;
+
+                    if(files.length > 0){
+                    for(int i = 0; i < ResultList.size(); i++){
+                        try {
+                            Exif = new ExifInterface(files[ResultList.get(i)].getPath());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        Exif.getLatLong(latLong);
+                        ImageLocation = new LatLng(latLong[0], latLong[1]);
+                        mGoogleMap.addMarker(new MarkerOptions()
+                                .position(ImageLocation)
+                                .title(files[ResultList.get(i)].getName()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                        }
+                        try {
+                            Exif = new ExifInterface(files[ResultList.get(img_counter)].getPath());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Exif.getLatLong(latLong);
+                        ImageLocation = new LatLng(latLong[0], latLong[1]);
+                        mGoogleMap.addMarker(new MarkerOptions()
                             .position(ImageLocation)
-                            .title(files[img_counter].getName()));
-                    mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary, 0));
+                            .title(files[ResultList.get(img_counter)].getName()));
+
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary, 0));
                 }
+
 
                 mMapView.onResume();
             }
@@ -207,7 +235,10 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
         newImage = false;
         if (files.length > 1 && img_counter > 0) {
             img_counter--;
-            updateCaption(files[img_counter]);
+            if (img_counter < 0){
+                img_counter = 0;
+            }
+            updateCaption(files[ResultList.get(img_counter)]);
 
         } else if (img_counter == 0) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
@@ -216,38 +247,87 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
 
     private void moveLeft() {
         newImage = false;
-        if (files.length > 1 && img_counter < files.length - 1) {
+        if (files.length > 1 && img_counter < ResultList.size() - 1) {
             img_counter++;
-            updateCaption(files[img_counter]);
-        } else if (img_counter == files.length - 1) {
+            if (img_counter >= ResultList.size()){
+                img_counter = img_counter-1;
+            }
+            updateCaption(files[ResultList.get(img_counter)]);
+        } else if (img_counter == ResultList.size() - 1) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
     }
 
-    public void searchUpdate (File[] files, String[] param_list){
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+
+
+    }
+
+    public void searchUpdate (File[] files){
+
+        float[] latLong = new float[2];
+        ExifInterface Exif = null;
 
         int index = 0;
-        int foundIndex = -1;
         for (File f : files){
             String path = f.getPath();
             String[] attr = path.split("_");
-            if((param_list[0].length() == 0) && (param_list[1].length() == 0)) {
-                if (attr[3].equals(param_list[2])) {
-                    foundIndex = index;
-                    break;
+            try {
+                Exif = new ExifInterface(f.getPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Exif.getLatLong(latLong);
+
+            Bundle extras = getIntent().getExtras();
+            if (extras == null) {
+                //return to mainActivity
+            } else {
+                if(attr[3].contains(extras.getString("CAPTION")) || extras.getString("CAPTION").length() == 0) {
+                    if ((Integer.parseInt(attr[1]) >= Integer.parseInt(extras.getString("STARTTIMESTAMP"))) && Integer.parseInt(attr[1]) <= Integer.parseInt(extras.getString("ENDTIMESTAMP"))){
+                        // TODO: 2/5/2021 Add checks for no latlng given
+                        if(latLong[0] > extras.getFloat("TOPLEFTLAT") && latLong[0] < extras.getFloat("BOTTOMRIGHTLAT")) {
+                            if(latLong[1] > extras.getFloat("TOPLEFTLONG") && latLong[1] < extras.getFloat("BOTTOMRIGHTLONG")){
+                                ResultList.add(index);
+                                if(index == 0){
+                                    maxLat = latLong[0];
+                                    minLat = latLong[0];
+                                    maxLong = latLong[1];
+                                    minLong = latLong[1];
+                                }else{
+                                    if(latLong[0] > maxLat){
+                                        maxLat = latLong[0];
+                                    }else{
+                                        minLat = latLong[0];
+                                    }
+                                    if(latLong[1] > maxLong){
+                                        maxLong = latLong[1];
+                                    }else{
+                                        minLong = latLong[1];
+                                    }
+                                }
+
+                            }
+                        }
+                    }
                 }
-            }else if ((Integer.parseInt(attr[1]) >= Integer.parseInt(param_list[0]) && Integer.parseInt(attr[1]) <= Integer.parseInt(param_list[1]))
-                    && (param_list[2].equals("") || attr[3].equals(param_list[2]))) {
-                foundIndex = index;
-                break;
             }
             index++;
+
         }
 
-        if(foundIndex == -1){
+        if(ResultList.size() == 0){
             Toast.makeText(this, "No pictures found", Toast.LENGTH_SHORT).show();
-        }else {
-            updateCaption(files[foundIndex]);
+            finish();
+        }else if(ResultList.size() == 1){
+            Intent i = new Intent(SearchResults.this, MainActivity.class);
+            i.putExtra("SELECTEDSEARCHIMAGE", ResultList.get(0));
+            startActivity(i);
+        }else{
+            updateCaption(files[ResultList.get(0)]);
         }
 
     }
