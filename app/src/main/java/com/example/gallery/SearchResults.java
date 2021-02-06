@@ -23,6 +23,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -40,13 +42,15 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
     private LatLng ImageLocation = new LatLng(0, 0);
     private LatLngBounds mMapBoundary;
     public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
+    private ImageView selectedImage;
+    private ImageButton left, right;
+    private TextView date_time, caption;
+    private File files[] = null;
+    private boolean newImage = false;
+    private List<Integer> ResultList = new ArrayList<>();
 
-    ImageView selectedImage;
-    ImageButton left, right;
-    TextView date_time, caption;
-    File files[] = null;
-    boolean newImage = false;
-    List<Integer> ResultList = new ArrayList<>();
+    private float maxLat = 0, minLat = 0, maxLong = 0, minLong = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,22 +159,52 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
                 // Set a boundary to start
                 Bundle extras = getIntent().getExtras();
 
-                double bottomBoundary = extras.getFloat("TOPLEFTLAT");
-                double leftBoundary = extras.getFloat("TOPLEFTLONG");
-                double topBoundary = extras.getFloat("BOTTOMRIGHTLAT");
-                double rightBoundary = extras.getFloat("BOTTOMRIGHTLONG");
+                //double bottomBoundary = extras.getFloat("TOPLEFTLAT");
+                //double leftBoundary = extras.getFloat("TOPLEFTLONG");
+                //double topBoundary = extras.getFloat("BOTTOMRIGHTLAT");
+                //double rightBoundary = extras.getFloat("BOTTOMRIGHTLONG");
+
+                double bottomBoundary = minLat - 0.2;
+                double leftBoundary = minLong - 0.2;
+                double topBoundary = maxLat + 0.2;
+                double rightBoundary = maxLong + 0.2;
 
                 mMapBoundary = new LatLngBounds(
                         new LatLng(bottomBoundary, leftBoundary),
                         new LatLng(topBoundary, rightBoundary)
                 );
                 mGoogleMap.clear();
-                if(files.length > 0){
-                    mGoogleMap.addMarker(new MarkerOptions()
+                float[] latLong = new float[2];
+                ExifInterface Exif = null;
+
+                    if(files.length > 0){
+                    for(int i = 0; i < ResultList.size(); i++){
+                        try {
+                            Exif = new ExifInterface(files[ResultList.get(i)].getPath());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        Exif.getLatLong(latLong);
+                        ImageLocation = new LatLng(latLong[0], latLong[1]);
+                        mGoogleMap.addMarker(new MarkerOptions()
+                                .position(ImageLocation)
+                                .title(files[ResultList.get(i)].getName()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                        }
+                        try {
+                            Exif = new ExifInterface(files[ResultList.get(img_counter)].getPath());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Exif.getLatLong(latLong);
+                        ImageLocation = new LatLng(latLong[0], latLong[1]);
+                        mGoogleMap.addMarker(new MarkerOptions()
                             .position(ImageLocation)
-                            .title(files[img_counter].getName()));
-                    mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary, 0));
+                            .title(files[ResultList.get(img_counter)].getName()));
+
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary, 0));
                 }
+
 
                 mMapView.onResume();
             }
@@ -258,6 +292,24 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
                         if(latLong[0] > extras.getFloat("TOPLEFTLAT") && latLong[0] < extras.getFloat("BOTTOMRIGHTLAT")) {
                             if(latLong[1] > extras.getFloat("TOPLEFTLONG") && latLong[1] < extras.getFloat("BOTTOMRIGHTLONG")){
                                 ResultList.add(index);
+                                if(index == 0){
+                                    maxLat = latLong[0];
+                                    minLat = latLong[0];
+                                    maxLong = latLong[1];
+                                    minLong = latLong[1];
+                                }else{
+                                    if(latLong[0] > maxLat){
+                                        maxLat = latLong[0];
+                                    }else{
+                                        minLat = latLong[0];
+                                    }
+                                    if(latLong[1] > maxLong){
+                                        maxLong = latLong[1];
+                                    }else{
+                                        minLong = latLong[1];
+                                    }
+                                }
+
                             }
                         }
                     }
