@@ -45,6 +45,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -275,7 +276,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     mGoogleMap.addMarker(new MarkerOptions()
                             .position(ImageLocation)
                             .title(files[img_counter].getName()));
-                    mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary, 0));
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary, 0));
                 }
 
                 mMapView.onResume();
