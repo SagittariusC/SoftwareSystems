@@ -59,13 +59,13 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
         caption = findViewById(R.id.view_caption);
         date_time = findViewById(R.id.timestamp2);
 
-        mMapView = findViewById(R.id.idLocationMap);
-        Bundle mapViewBundle = null;
-        if (savedInstanceState != null) {
-            mapViewBundle = savedInstanceState.getBundle(MAPVIEW_BUNDLE_KEY);
-        }
-        mMapView.onCreate(mapViewBundle);
-        mMapView.getMapAsync((OnMapReadyCallback) this);
+//        mMapView = findViewById(R.id.idLocationMap);
+//        Bundle mapViewBundle = null;
+//        if (savedInstanceState != null) {
+//            mapViewBundle = savedInstanceState.getBundle(MAPVIEW_BUNDLE_KEY);
+//        }
+//        mMapView.onCreate(mapViewBundle);
+//        mMapView.getMapAsync((OnMapReadyCallback) this);
 
         ActivityCompat.requestPermissions(this, new String[]{
                 android.Manifest.permission.ACCESS_FINE_LOCATION,
