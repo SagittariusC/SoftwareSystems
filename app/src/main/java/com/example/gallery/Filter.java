@@ -5,12 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
@@ -21,7 +19,8 @@ public class Filter extends AppCompatActivity {
 
     final Calendar myCalendar = Calendar.getInstance();
     Button searchButton, cancelButton;
-    EditText startDateText;
+    EditText startDateText, endDateText;
+    Boolean startDateEdit = false, endDateEdit = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +30,7 @@ public class Filter extends AppCompatActivity {
         searchButton = findViewById(R.id.searchButton);
         cancelButton = findViewById(R.id.cancelButton);
         startDateText= (EditText) findViewById(R.id.startDateText);
+        endDateText= (EditText) findViewById(R.id.endDateText);
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -56,29 +56,51 @@ public class Filter extends AppCompatActivity {
                 myCalendar.set(Calendar.YEAR, year);
                 myCalendar.set(Calendar.MONTH, monthOfYear);
                 myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                updateLabel();
-            }
+                if(startDateEdit){
+                    startDateEdit = false;
+                    updateLabel(startDateText);
+                }
+                if(endDateEdit){
+                    endDateEdit = false;
+                    updateLabel(endDateText);
+                }
 
+            }
         };
 
         startDateText.setOnClickListener(new View.OnClickListener(){
 
             @Override
             public void onClick(View v) {
+                startDateEdit = true;
                 // TODO Auto-generated method stub
                 new DatePickerDialog(Filter.this, date, myCalendar
                         .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
                         myCalendar.get(Calendar.DAY_OF_MONTH)).show();
+
+            }
+        });
+
+        endDateText.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                endDateEdit = true;
+                // TODO Auto-generated method stub
+                new DatePickerDialog(Filter.this, date, myCalendar
+                        .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
+                        myCalendar.get(Calendar.DAY_OF_MONTH)).show();
+
             }
         });
 
         }
 
-    private void updateLabel() {
-        String myFormat = "YYYYMMDD"; //In which you need put here
+    private void updateLabel(EditText edittext) {
+        String myFormat = "YYYYMMdd"; //In which you need put here
         SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
 
-        startDateText.setText(sdf.format(myCalendar.getTime()));
+        edittext.setText(sdf.format(myCalendar.getTime()));
     }
 
     public void cancel(View view) {
