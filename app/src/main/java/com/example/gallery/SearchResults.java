@@ -1,4 +1,4 @@
-package com.example.gallery;
+    package com.example.gallery;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -286,18 +286,17 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
             if (extras == null) {
                 //return to mainActivity
             } else {
-                if(attr[3].contains(extras.getString("CAPTION")) || extras.getString("CAPTION").length() == 0) {
+                if (attr[3].contains(extras.getString("CAPTION")) || extras.getString("CAPTION").length() == 0) {
                     if ((Integer.parseInt(attr[1]) >= Integer.parseInt(extras.getString("STARTTIMESTAMP"))) && Integer.parseInt(attr[1]) <= Integer.parseInt(extras.getString("ENDTIMESTAMP"))){
-                        // TODO: 2/5/2021 Add checks for no latlng given
-                        if(latLong[0] > extras.getFloat("TOPLEFTLAT") && latLong[0] < extras.getFloat("BOTTOMRIGHTLAT")) {
+                        if (latLong[0] < extras.getFloat("TOPLEFTLAT") && latLong[0] > extras.getFloat("BOTTOMRIGHTLAT")) {
                             if(latLong[1] > extras.getFloat("TOPLEFTLONG") && latLong[1] < extras.getFloat("BOTTOMRIGHTLONG")){
                                 ResultList.add(index);
-                                if(index == 0){
+                                if(ResultList.size() == 1){
                                     maxLat = latLong[0];
                                     minLat = latLong[0];
                                     maxLong = latLong[1];
                                     minLong = latLong[1];
-                                }else{
+                                } else {
                                     if(latLong[0] > maxLat){
                                         maxLat = latLong[0];
                                     }else{

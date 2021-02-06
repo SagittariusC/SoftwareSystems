@@ -2,23 +2,31 @@ package com.example.gallery;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class Filter extends AppCompatActivity {
 
     Button searchButton, cancelButton;
+    EditText fromDate;
+    final Calendar myCalendar = Calendar.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filter);
-
+        fromDate= (EditText) findViewById(R.id.startDateText);
         searchButton = findViewById(R.id.searchButton);
         cancelButton = findViewById(R.id.cancelButton);
 
@@ -37,7 +45,38 @@ public class Filter extends AppCompatActivity {
             }
         });
 
-        }
+        DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
+
+            @Override
+            public void onDateSet(DatePicker view, int year, int monthOfYear,
+                                  int dayOfMonth) {
+                // TODO Auto-generated method stub
+                myCalendar.set(Calendar.YEAR, year);
+                myCalendar.set(Calendar.MONTH, monthOfYear);
+                myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                updateLabel();
+            }
+
+        };
+
+        fromDate.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                new DatePickerDialog(getApplicationContext(), date, myCalendar
+                        .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
+                        myCalendar.get(Calendar.DAY_OF_MONTH)).show();
+            }
+        });
+
+    }
+
+    private void updateLabel() {
+        String myFormat = "MM/dd/yy"; //In which you need put here
+        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
+        fromDate.setText(sdf.format(myCalendar.getTime()));
+    }
 
 
     public void cancel(View view) {
@@ -50,7 +89,7 @@ public class Filter extends AppCompatActivity {
 
 
         Intent i = new Intent(this, SearchResults.class);
-        EditText fromDate = (EditText) findViewById(R.id.startDateText);
+//        EditText fromDate = (EditText) findViewById(R.id.startDateText);
         EditText toDate = (EditText) findViewById(R.id.endDateText);
         EditText caption = (EditText) findViewById(R.id.captionText);
         EditText TopLeftLat = (EditText) findViewById(R.id.TopLeftLat);
@@ -61,10 +100,10 @@ public class Filter extends AppCompatActivity {
         i.putExtra("STARTTIMESTAMP", fromDate.length() != 0 ? fromDate.getText().toString() : "0");
         i.putExtra("ENDTIMESTAMP", toDate.length() != 0 ? toDate.getText().toString() : "30000000");
         i.putExtra("CAPTION", caption.length() != 0 ? caption.getText().toString() : "");
-        i.putExtra("TOPLEFTLAT", TopLeftLat.length() != 0 ? Float.parseFloat(TopLeftLat.getText().toString()) : "1000");
-        i.putExtra("TOPLEFTLONG", TopLeftLong.length() != 0 ? Float.parseFloat(TopLeftLong.getText().toString()) : "-1000");
-        i.putExtra("BOTTOMRIGHTLAT", BottomRightLat.length() != 0 ? Float.parseFloat(BottomRightLat.getText().toString()) : "-1000");
-        i.putExtra("BOTTOMRIGHTLONG", BottomRightLong.length() != 0 ? Float.parseFloat(BottomRightLong.getText().toString()) : "1000");
+        i.putExtra("TOPLEFTLAT", TopLeftLat.length() != 0 ? Float.parseFloat(TopLeftLat.getText().toString()) : 1000);
+        i.putExtra("TOPLEFTLONG", TopLeftLong.length() != 0 ? Float.parseFloat(TopLeftLong.getText().toString()) : -1000);
+        i.putExtra("BOTTOMRIGHTLAT", BottomRightLat.length() != 0 ? Float.parseFloat(BottomRightLat.getText().toString()) : -1000);
+        i.putExtra("BOTTOMRIGHTLONG", BottomRightLong.length() != 0 ? Float.parseFloat(BottomRightLong.getText().toString()) : 1000);
 
         startActivity(i);
 
