@@ -100,7 +100,6 @@
         android:ems="10"
         android:hint="@string/editText_Sdate"
         android:inputType="date"
-        android:focusable="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -116,7 +115,6 @@
         android:ems="10"
         android:hint="@string/editText_Edate"
         android:inputType="date"
-        android:focusable="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/startDateText" />
 
