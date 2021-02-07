@@ -37,7 +37,7 @@ public class UITest {
     @Rule
     public IntentsTestRule<MainActivity> intentsRule = new IntentsTestRule<>(MainActivity.class);
 
-    @Test
+    /*@Test
     public void validateSnapCameraScenario() {
         // Create a bitmap we can use for our simulated camera image
         Bitmap icon = BitmapFactory.decodeFile("app/src/test.png");
@@ -57,7 +57,7 @@ public class UITest {
          Intents.intended(IntentMatchers.toPackage("com.android.camera2"));
 
         // ... additional test steps and validation ...
-    }
+    }*/
 
     @Test
     public void searchCaption() throws InterruptedException {
