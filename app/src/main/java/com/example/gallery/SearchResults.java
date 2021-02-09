@@ -159,10 +159,10 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
                 // Set a boundary to start
                 Bundle extras = getIntent().getExtras();
 
-                double bottomBoundary = minLat - 0.3;
-                double leftBoundary = minLong - 0.3;
-                double topBoundary = maxLat + 0.3;
-                double rightBoundary = maxLong + 0.3;
+                double bottomBoundary = minLat - (maxLat - minLat)*0.3;
+                double leftBoundary = minLong - (maxLong - minLong)*0.3;
+                double topBoundary = maxLat + (maxLat - minLat)*0.3;
+                double rightBoundary = maxLong + (maxLong - minLong)*0.3;
 
                 mMapBoundary = new LatLngBounds(
                         new LatLng(bottomBoundary, leftBoundary),
