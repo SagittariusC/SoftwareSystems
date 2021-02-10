@@ -297,7 +297,8 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
 
         if (ResultList.size() == 0) {
             Toast.makeText(this, "0 pictures found", Toast.LENGTH_SHORT).show();
-            finish();
+            Intent i = new Intent(SearchResults.this, MainActivity.class);
+            startActivity(i);
         } else if (ResultList.size() == 1) {
             Toast.makeText(this, "1 picture found", Toast.LENGTH_SHORT).show();
             Intent i = new Intent(SearchResults.this, MainActivity.class);

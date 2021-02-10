@@ -360,13 +360,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             try {
                 ExifInterface exif = new ExifInterface(imageFile.getPath());
-                //String latitudeStr = "90/1,12/1,30/1";
                 double lat = location.getLatitude();
                 double alat = Math.abs(lat);
                 String dms = Location.convert(alat, Location.FORMAT_SECONDS);
                 String[] splits = dms.split(":");
                 String[] secnds = (splits[2]).split("\\.");
                 String seconds;
+
                 if (secnds.length == 0) {
                     seconds = splits[2];
                 } else {
@@ -374,13 +374,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
 
                 String latitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
-                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, latitudeStr);
 
+                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, latitudeStr);
                 exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, lat > 0 ? "N" : "S");
 
                 double lon = location.getLongitude();
                 double alon = Math.abs(lon);
-
 
                 dms = Location.convert(alon, Location.FORMAT_SECONDS);
                 splits = dms.split(":");
@@ -391,17 +390,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 } else {
                     seconds = secnds[0];
                 }
-                String longitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
 
+                String longitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
 
                 exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, longitudeStr);
                 exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, lon > 0 ? "E" : "W");
-
                 exif.saveAttributes();
+
             } catch (IOException e) {
                 Log.e("PictureActivity", e.getLocalizedMessage());
             }
-
         }
     }
 
@@ -480,9 +478,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     e.printStackTrace();
                 }
 
-
                 int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-
 
                 if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
                     try {
@@ -512,6 +508,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void updatePhoto(String path, String caption) {
         String[] attr = path.split("_");
+
         if (attr.length > 4) {
             File to = new File(attr[0] + "_" + attr[1] + "_" + attr[2] + "_" + caption + "_" + attr[4]);
             File from = new File(path);
@@ -523,8 +520,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
-
-
     }
 
     public void updateCaption(File f) {

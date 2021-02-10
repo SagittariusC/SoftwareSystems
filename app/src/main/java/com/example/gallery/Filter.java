@@ -29,19 +29,19 @@ public class Filter extends AppCompatActivity {
 
         searchButton = findViewById(R.id.searchButton);
         cancelButton = findViewById(R.id.cancelButton);
-        startDateText= (EditText) findViewById(R.id.startDateText);
-        endDateText= (EditText) findViewById(R.id.endDateText);
+        startDateText = (EditText) findViewById(R.id.startDateText);
+        endDateText = (EditText) findViewById(R.id.endDateText);
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View v) {
+            public void onClick(View v) {
                 cancel(v);
             }
         });
 
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View v) {
+            public void onClick(View v) {
                 go(v);
             }
         });
@@ -55,18 +55,18 @@ public class Filter extends AppCompatActivity {
                 myCalendar.set(Calendar.YEAR, year);
                 myCalendar.set(Calendar.MONTH, monthOfYear);
                 myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                if(startDateEdit){
+                if (startDateEdit) {
                     startDateEdit = false;
                     updateLabel(startDateText);
                 }
-                if(endDateEdit){
+                if (endDateEdit) {
                     endDateEdit = false;
                     updateLabel(endDateText);
                 }
             }
         };
 
-        startDateText.setOnClickListener(new View.OnClickListener(){
+        startDateText.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -75,11 +75,10 @@ public class Filter extends AppCompatActivity {
                 new DatePickerDialog(Filter.this, date, myCalendar
                         .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
                         myCalendar.get(Calendar.DAY_OF_MONTH)).show();
-
             }
         });
 
-        endDateText.setOnClickListener(new View.OnClickListener(){
+        endDateText.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -88,11 +87,9 @@ public class Filter extends AppCompatActivity {
                 new DatePickerDialog(Filter.this, date, myCalendar
                         .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
                         myCalendar.get(Calendar.DAY_OF_MONTH)).show();
-
             }
         });
-
-        }
+    }
 
     private void updateLabel(EditText edittext) {
         String myFormat = "YYYYMMdd"; //In which you need put here
@@ -109,6 +106,7 @@ public class Filter extends AppCompatActivity {
     public void go(final View v) {
 
         Intent i = new Intent(this, SearchResults.class);
+
         EditText fromDate = (EditText) findViewById(R.id.startDateText);
         EditText toDate = (EditText) findViewById(R.id.endDateText);
         EditText caption = (EditText) findViewById(R.id.captionText);
@@ -119,7 +117,7 @@ public class Filter extends AppCompatActivity {
 
         //Check if date, caption, and lat/long fields are empty
         //If so, tell user that nothing was entered, return to main
-        if (fromDate.length() == 0 && toDate.length() == 0 && caption.length() == 0 && TopLeftLat.length() == 0 && TopLeftLong.length() == 0 && BottomRightLat.length() == 0 && BottomRightLong.length() == 0 ) {
+        if (fromDate.length() == 0 && toDate.length() == 0 && caption.length() == 0 && TopLeftLat.length() == 0 && TopLeftLong.length() == 0 && BottomRightLat.length() == 0 && BottomRightLong.length() == 0) {
             Toast.makeText(this, "No filter criteria entered", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
