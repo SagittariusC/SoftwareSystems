@@ -39,7 +39,6 @@ public class Filter extends AppCompatActivity {
             }
         });
 
-
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick (View v) {
@@ -64,7 +63,6 @@ public class Filter extends AppCompatActivity {
                     endDateEdit = false;
                     updateLabel(endDateText);
                 }
-
             }
         };
 
@@ -119,11 +117,14 @@ public class Filter extends AppCompatActivity {
         EditText BottomRightLat = (EditText) findViewById(R.id.BottomRightLat);
         EditText BottomRightLong = (EditText) findViewById(R.id.BottomRightLong);
 
-        if( fromDate.length() == 0 && toDate.length() == 0 && caption.length() == 0 && TopLeftLat.length() == 0 && TopLeftLong.length() == 0 && BottomRightLat.length() == 0 && BottomRightLong.length() == 0 ){
+        //Check if date, caption, and lat/long fields are empty
+        //If so, tell user that nothing was entered, return to main
+        if (fromDate.length() == 0 && toDate.length() == 0 && caption.length() == 0 && TopLeftLat.length() == 0 && TopLeftLong.length() == 0 && BottomRightLat.length() == 0 && BottomRightLong.length() == 0 ) {
             Toast.makeText(this, "No filter criteria entered", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         } else {
+            //if >1 field is full, get inputs or default
             i.putExtra("STARTTIMESTAMP", fromDate.length() != 0 ? fromDate.getText().toString() : "0");
             i.putExtra("ENDTIMESTAMP", toDate.length() != 0 ? toDate.getText().toString() : "30000000");
             i.putExtra("CAPTION", caption.length() != 0 ? caption.getText().toString() : "");

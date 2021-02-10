@@ -17,10 +17,10 @@
         android:hint="Long"
         android:inputType="textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/captionText" />
+        app:layout_constraintTop_toBottomOf="@+id/captionText"
+        tools:ignore="Autofill" />
 
     <TextView
-        android:id="@+id/textView8"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -46,7 +46,8 @@
         app:layout_constraintBottom_toBottomOf="@+id/BottomRightLong"
         app:layout_constraintEnd_toStartOf="@+id/BottomRightLong"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/TopLeftLat" />
+        app:layout_constraintStart_toStartOf="@+id/TopLeftLat"
+        tools:ignore="Autofill" />
 
     <Button
         android:id="@+id/cancelButton"
@@ -131,7 +132,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/TopLeftLong"
-        app:layout_constraintTop_toBottomOf="@+id/TopLeftLong" />
+        app:layout_constraintTop_toBottomOf="@+id/TopLeftLong"
+        tools:ignore="Autofill" />
 
     <EditText
         android:id="@+id/TopLeftLat"
@@ -147,7 +149,8 @@
         app:layout_constraintBottom_toBottomOf="@+id/TopLeftLong"
         app:layout_constraintEnd_toStartOf="@+id/TopLeftLong"
         app:layout_constraintHorizontal_bias="0.291"
-        app:layout_constraintStart_toEndOf="@+id/textView6" />
+        app:layout_constraintStart_toEndOf="@+id/textView6"
+        tools:ignore="Autofill" />
 
     <TextView
         android:id="@+id/textView6"
@@ -161,7 +164,6 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -175,7 +177,6 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -189,7 +190,6 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"

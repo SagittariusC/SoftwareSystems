@@ -22,7 +22,8 @@
         android:textSize="12sp"
         app:layout_constraintBottom_toTopOf="@+id/idSearchLocationMap"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchImageView" />
+        app:layout_constraintTop_toBottomOf="@+id/searchImageView"
+        tools:ignore="LabelFor" />
 
     <ImageView
         android:id="@+id/searchImageView"

@@ -9,10 +9,8 @@
     <string name="button_Cancel">Cancel</string>
     <string name="button_Search">Search</string>
     <string name="editText_Edate">YYYYMMDD</string>
-    <string name="editText_Location">Enter image location.</string>
     <string name="textView_Sdate">Start Date</string>
     <string name="textView_Edate">End Date</string>
-    <string name="textView_Location">Location</string>
     <string name="textView_Caption">Caption</string>
     <string name="editText_Sdate">YYYYMMDD</string>
     <string name="displayImageView_Photo">Photo</string>

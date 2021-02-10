@@ -56,18 +56,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+
     public static final int CAMERA_PERM_CODE = 101;
     public static final int CAMERA_REQUEST_CODE = 102;
+    public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
     static final int REQUEST_TAKE_PHOTO = 1;
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
     private static int img_counter = 0;
-
-    private MapView mMapView;
-    private GoogleMap mGoogleMap;
-    private LatLng ImageLocation = new LatLng(0, 0);
-    private LatLngBounds mMapBoundary;
-    public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
-
     ImageView selectedImage;
     Button camera, filter;
     ImageButton left, right;
@@ -75,10 +70,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     String currentPhotoPath;
     TextView date_time, latlongtext;
     EditText caption;
-    File files[] = null;
+    File[] files = null;
     boolean newImage = false;
     File newImageFile = null;
-
+    private MapView mMapView;
+    private GoogleMap mGoogleMap;
+    private LatLng ImageLocation = new LatLng(0, 0);
+    private LatLngBounds mMapBoundary;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,9 +146,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        filter.setOnClickListener(new View.OnClickListener(){
+        filter.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 Intent i = new Intent(MainActivity.this, Filter.class);
                 startActivity(i);
             }
@@ -161,10 +159,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     String cap = caption.getText().toString();
-                    if(newImage){
+                    if (newImage) {
                         updatePhoto(newImageFile.getPath(), cap);
                         newImage = false;
-                    }else{
+                    } else {
                         updatePhoto(files[img_counter].getPath(), cap);
                     }
                     InputMethodManager inputManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
@@ -176,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         share.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View v) {
+            public void onClick(View v) {
                 shareFunction();
             }
         });
@@ -184,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void shareFunction() {
         try {
-            File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+            File[] files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
             File current_file = files[img_counter];
             //Toast.makeText(this, files[img_counter].toString(), Toast.LENGTH_SHORT).show();
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
@@ -273,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         new LatLng(topBoundary, rightBoundary)
                 );
                 mGoogleMap.clear();
-                if(files.length > 0){
+                if (files.length > 0) {
                     mGoogleMap.addMarker(new MarkerOptions()
                             .position(ImageLocation)
                             .title(files[img_counter].getName()));
@@ -350,13 +348,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    public void geoTag(File imageFile){
+    public void geoTag(File imageFile) {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             Location location = null;
             LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            location = (Location) lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            if(location == null) {
+            location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (location == null) {
                 return;
             }
 
@@ -369,19 +367,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 String[] splits = dms.split(":");
                 String[] secnds = (splits[2]).split("\\.");
                 String seconds;
-                if(secnds.length==0)
-                {
+                if (secnds.length == 0) {
                     seconds = splits[2];
-                }
-                else
-                {
+                } else {
                     seconds = secnds[0];
                 }
 
                 String latitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
                 exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, latitudeStr);
 
-                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, lat>0?"N":"S");
+                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, lat > 0 ? "N" : "S");
 
                 double lon = location.getLongitude();
                 double alon = Math.abs(lon);
@@ -391,19 +386,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 splits = dms.split(":");
                 secnds = (splits[2]).split("\\.");
 
-                if(secnds.length==0)
-                {
+                if (secnds.length == 0) {
                     seconds = splits[2];
-                }
-                else
-                {
+                } else {
                     seconds = secnds[0];
                 }
                 String longitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
 
 
                 exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, longitudeStr);
-                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, lon>0?"E":"W");
+                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, lon > 0 ? "E" : "W");
 
                 exif.saveAttributes();
             } catch (IOException e) {
@@ -521,10 +513,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void updatePhoto(String path, String caption) {
         String[] attr = path.split("_");
         if (attr.length > 4) {
-            File to = new File(attr[0] + "_" + attr[1] + "_" + attr[2] + "_" + caption +  "_" + attr[4]);
+            File to = new File(attr[0] + "_" + attr[1] + "_" + attr[2] + "_" + caption + "_" + attr[4]);
             File from = new File(path);
             from.renameTo(to);
-        }else{
+        } else {
             File to = new File(attr[0] + "_" + attr[1] + "_" + attr[2] + "_" + caption + "_" + attr[3]);
             File from = new File(path);
             from.renameTo(to);
@@ -552,7 +544,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         ImageLocation = new LatLng(latLong[0], latLong[1]);
         mMapView.getMapAsync(this);
 
-        if (path_str == null || path_str =="") {
+        if (path_str == null || path_str == "") {
             selectedImage.setImageResource(R.mipmap.ic_launcher);
             date_time.setText("");
             caption.setText("");
@@ -567,16 +559,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 date = attr[1];
             }
             if (date.length() == 8) {
-                String date_format = date.substring(0,4) + "/" + date.substring(4,6) + "/" + date.substring(6,8);
+                String date_format = date.substring(0, 4) + "/" + date.substring(4, 6) + "/" + date.substring(6, 8);
                 date_time.setText(date_format);
             } else {
                 date_time.setText(date);
             }
-            String location_format =  "Lat: " + String.format("%.3f", latLong[0]) + " Long: " + String.format("%.3f", latLong[1]);
+            String location_format = "Lat: " + String.format("%.3f", latLong[0]) + " Long: " + String.format("%.3f", latLong[1]);
             latlongtext.setText(location_format);
         }
     }
-
-
-
 }
