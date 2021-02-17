@@ -89,21 +89,35 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:srcCompat="@tools:sample/avatars" />
 
-    <EditText
+    <TextView
         android:id="@+id/timestamp"
         android:layout_width="165dp"
-        android:layout_height="46dp"
+        android:layout_height="24dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
+        android:autofillHints=""
         android:background="@null"
         android:clickable="false"
         android:ems="10"
         android:gravity="right"
-        android:inputType="date"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/displayImageView"
-        android:autofillHints="" />
+        app:layout_constraintTop_toBottomOf="@+id/displayImageView" />
+
+    <TextView
+        android:id="@+id/latLongText"
+        android:layout_width="165dp"
+        android:layout_height="21dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:autofillHints=""
+        android:background="@null"
+        android:clickable="false"
+        android:ems="10"
+        android:gravity="right"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/timestamp" />
 
     <ImageButton
         android:id="@+id/right_button"

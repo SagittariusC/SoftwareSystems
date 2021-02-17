@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     ImageButton left, right;
     FloatingActionButton share;
     String currentPhotoPath;
-    TextView date_time;
+    TextView date_time, latlongtext;
     EditText caption;
     File files[] = null;
     boolean newImage = false;
@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         caption = findViewById(R.id.edit_caption);
         date_time = findViewById(R.id.timestamp);
         filter = findViewById(R.id.filter_button);
+        latlongtext = findViewById(R.id.latLongText);
 
         mMapView = findViewById(R.id.idLocationMap);
         Bundle mapViewBundle = null;
@@ -571,6 +572,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             } else {
                 date_time.setText(date);
             }
+            String location_format =  "Lat: " + String.format("%.3f", latLong[0]) + " Long: " + String.format("%.3f", latLong[1]);
+            latlongtext.setText(location_format);
         }
     }
 
