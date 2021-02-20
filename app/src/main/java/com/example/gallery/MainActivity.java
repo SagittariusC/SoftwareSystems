@@ -22,6 +22,7 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -54,6 +55,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     public static final int CAMERA_PERM_CODE = 101;
@@ -85,6 +87,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+
+        Debug.startMethodTracing("sample");
 
         selectedImage = findViewById(R.id.displayImageView);
         camera = findViewById(R.id.snap);
@@ -182,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+
     public void shareFunction() {
         try {
             File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
@@ -197,6 +202,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } catch (Exception e) {
             e.printStackTrace();
         }
+        Debug.stopMethodTracing();
     }
 
     @Override
