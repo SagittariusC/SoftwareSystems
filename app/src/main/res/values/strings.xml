@@ -14,4 +14,8 @@
     <string name="textView_Caption">Caption</string>
     <string name="editText_Sdate">YYYYMMDD</string>
     <string name="displayImageView_Photo">Photo</string>
+    <string name="bottom_right_bound">Bottom Right Bound</string>
+    <string name="lat">Lat</string>
+    <string name="top_left_bound">Top Left Bound</string>
+    <string name="longText">Long</string>
 </resources>

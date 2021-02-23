@@ -12,8 +12,6 @@ import android.media.ExifInterface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -23,7 +21,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -220,11 +217,7 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
         newImage = false;
         if (files.length > 1 && img_counter > 0) {
             img_counter--;
-            if (img_counter < 0) {
-                img_counter = 0;
-            }
             updateCaption(files[ResultList.get(img_counter)]);
-
         } else if (img_counter == 0) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
@@ -234,9 +227,6 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
         newImage = false;
         if (files.length > 1 && img_counter < ResultList.size() - 1) {
             img_counter++;
-            if (img_counter >= ResultList.size()) {
-                img_counter = img_counter - 1;
-            }
             updateCaption(files[ResultList.get(img_counter)]);
         } else if (img_counter == ResultList.size() - 1) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
@@ -255,8 +245,8 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
 
         int index = 0;
         for (File f : files) {
-            String path = f.getPath();
-            String[] attr = path.split("_");
+            String[] attr = f.getPath().split("_");
+
             try {
                 Exif = new ExifInterface(f.getPath());
             } catch (IOException e) {
@@ -266,29 +256,30 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
 
             Bundle extras = getIntent().getExtras();
 
-            if (attr[3].contains(extras.getString("CAPTION")) || extras.getString("CAPTION").length() == 0) {
-                if ((Integer.parseInt(attr[1]) >= Integer.parseInt(extras.getString("STARTTIMESTAMP"))) && Integer.parseInt(attr[1]) <= Integer.parseInt(extras.getString("ENDTIMESTAMP"))) {
-                    if (latLong[0] < extras.getFloat("TOPLEFTLAT") && latLong[0] > extras.getFloat("BOTTOMRIGHTLAT")) {
-                        if (latLong[1] > extras.getFloat("TOPLEFTLONG") && latLong[1] < extras.getFloat("BOTTOMRIGHTLONG")) {
-                            ResultList.add(index);
-                            if (ResultList.size() == 1) {
-                                maxLat = latLong[0];
-                                minLat = latLong[0];
-                                maxLong = latLong[1];
-                                minLong = latLong[1];
-                            } else {
-                                if (latLong[0] > maxLat) {
-                                    maxLat = latLong[0];
-                                } else {
-                                    minLat = latLong[0];
-                                }
-                                if (latLong[1] > maxLong) {
-                                    maxLong = latLong[1];
-                                } else {
-                                    minLong = latLong[1];
-                                }
-                            }
-                        }
+            if (attr[3].contains(extras.getString("CAPTION")) || extras.getString("CAPTION").length() == 0
+                    && Integer.parseInt(attr[1]) >= Integer.parseInt(extras.getString("STARTTIMESTAMP"))
+                    && Integer.parseInt(attr[1]) <= Integer.parseInt(extras.getString("ENDTIMESTAMP"))
+                    && latLong[0] < extras.getFloat("TOPLEFTLAT")
+                    && latLong[0] > extras.getFloat("BOTTOMRIGHTLAT")
+                    && latLong[1] > extras.getFloat("TOPLEFTLONG")
+                    && latLong[1] < extras.getFloat("BOTTOMRIGHTLONG")) {
+
+                ResultList.add(index);
+                if (ResultList.size() == 1) {
+                    maxLat = latLong[0];
+                    minLat = latLong[0];
+                    maxLong = latLong[1];
+                    minLong = latLong[1];
+                } else {
+                    if (latLong[0] > maxLat) {
+                        maxLat = latLong[0];
+                    } else {
+                        minLat = latLong[0];
+                    }
+                    if (latLong[1] > maxLong) {
+                        maxLong = latLong[1];
+                    } else {
+                        minLong = latLong[1];
                     }
                 }
             }
@@ -314,6 +305,7 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
         String date;
 
         ExifInterface ei = null;
+
         try {
             ei = new ExifInterface(f.getPath());
         } catch (IOException e) {
