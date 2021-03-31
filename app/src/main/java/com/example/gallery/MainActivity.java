@@ -22,6 +22,7 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -54,6 +55,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -81,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
 
@@ -435,7 +438,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(imageFileName, ".jpg", storageDir);
@@ -559,7 +562,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             } else {
                 date_time.setText(date);
             }
-            String location_format = "Lat: " + String.format("%.3f", latLong[0]) + " Long: " + String.format("%.3f", latLong[1]);
+            String location_format = "Lat: " + String.format(Locale.getDefault(), "%.3f", latLong[0]) + " Long: " + String.format(Locale.getDefault(), "%.3f", latLong[1]);
             latlongtext.setText(location_format);
         }
     }

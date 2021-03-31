@@ -29,8 +29,8 @@ public class Filter extends AppCompatActivity {
 
         searchButton = findViewById(R.id.searchButton);
         cancelButton = findViewById(R.id.cancelButton);
-        startDateText = (EditText) findViewById(R.id.startDateText);
-        endDateText = (EditText) findViewById(R.id.endDateText);
+        startDateText = findViewById(R.id.startDateText);
+        endDateText = findViewById(R.id.endDateText);
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,13 +107,13 @@ public class Filter extends AppCompatActivity {
 
         Intent i = new Intent(this, SearchResults.class);
 
-        EditText fromDate = (EditText) findViewById(R.id.startDateText);
-        EditText toDate = (EditText) findViewById(R.id.endDateText);
-        EditText caption = (EditText) findViewById(R.id.captionText);
-        EditText TopLeftLat = (EditText) findViewById(R.id.TopLeftLat);
-        EditText TopLeftLong = (EditText) findViewById(R.id.TopLeftLong);
-        EditText BottomRightLat = (EditText) findViewById(R.id.BottomRightLat);
-        EditText BottomRightLong = (EditText) findViewById(R.id.BottomRightLong);
+        EditText fromDate = findViewById(R.id.startDateText);
+        EditText toDate = findViewById(R.id.endDateText);
+        EditText caption = findViewById(R.id.captionText);
+        EditText TopLeftLat = findViewById(R.id.TopLeftLat);
+        EditText TopLeftLong = findViewById(R.id.TopLeftLong);
+        EditText BottomRightLat = findViewById(R.id.BottomRightLat);
+        EditText BottomRightLong = findViewById(R.id.BottomRightLong);
 
         //Check if date, caption, and lat/long fields are empty
         //If so, tell user that nothing was entered, return to main
