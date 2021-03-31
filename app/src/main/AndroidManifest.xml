@@ -33,7 +33,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Gallery"
         tools:ignore="ExtraText">
-        <activity android:name=".SearchResults"></activity>
+
+        <activity android:name=".Password">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".SearchResults" />
 
         <meta-data
             android:name="com.google.android.actions"
@@ -47,11 +55,7 @@
 
         <activity android:name=".Filter" />
         <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
         <provider
