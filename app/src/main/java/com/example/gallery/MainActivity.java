@@ -2,7 +2,6 @@ package com.example.gallery;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -20,9 +19,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.media.ExifInterface;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -37,16 +34,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.gallery.BuildConfig;
-import com.example.gallery.Filter;
-import com.example.gallery.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -83,7 +76,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
         files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
 
@@ -369,40 +361,38 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 String[] splits = dms.split(":");
                 String[] secnds = (splits[2]).split("\\.");
                 String seconds;
-
-                if (secnds.length == 0) {
-                    seconds = splits[2];
-                } else {
-                    seconds = secnds[0];
-                }
+                //if (secnds.length == 0) {
+                //    seconds = splits[2];
+                //} else {
+                //    seconds = secnds[0];
+                //}
+                seconds = ((secnds.length == 0) ? splits[2] : secnds[0]);
 
                 String latitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
-
                 exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, latitudeStr);
+
                 exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, lat > 0 ? "N" : "S");
 
                 double lon = location.getLongitude();
                 double alon = Math.abs(lon);
 
+
                 dms = Location.convert(alon, Location.FORMAT_SECONDS);
                 splits = dms.split(":");
                 secnds = (splits[2]).split("\\.");
 
-                if (secnds.length == 0) {
-                    seconds = splits[2];
-                } else {
-                    seconds = secnds[0];
-                }
-
+                seconds = ((secnds.length == 0) ? splits[2] : secnds[0]);
                 String longitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
+
 
                 exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, longitudeStr);
                 exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, lon > 0 ? "E" : "W");
-                exif.saveAttributes();
 
+                exif.saveAttributes();
             } catch (IOException e) {
                 Log.e("PictureActivity", e.getLocalizedMessage());
             }
+
         }
     }
 
@@ -438,7 +428,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(imageFileName, ".jpg", storageDir);
@@ -506,12 +496,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 geoTag(newImageFile);
                 updateCaption(newImageFile);
             }
+            if(resultCode == Activity.RESULT_CANCELED){
+                newImageFile = new File(currentPhotoPath);
+                newImageFile.delete();
+            }
         }
     }
 
     public void updatePhoto(String path, String caption) {
         String[] attr = path.split("_");
-
         if (attr.length > 4) {
             File to = new File(attr[0] + "_" + attr[1] + "_" + attr[2] + "_" + caption + "_" + attr[4]);
             File from = new File(path);
@@ -523,6 +516,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+
+
     }
 
     public void updateCaption(File f) {
@@ -562,7 +557,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             } else {
                 date_time.setText(date);
             }
-            String location_format = "Lat: " + String.format(Locale.getDefault(), "%.3f", latLong[0]) + " Long: " + String.format(Locale.getDefault(), "%.3f", latLong[1]);
+            String location_format = "Lat: " + String.format(Locale.US,"%.3f", latLong[0]) + " Long: " + String.format(Locale.US,"%.3f", latLong[1]);
             latlongtext.setText(location_format);
         }
     }
