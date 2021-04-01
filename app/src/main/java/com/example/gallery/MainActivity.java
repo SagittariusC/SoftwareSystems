@@ -10,7 +10,9 @@ import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -65,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     ImageView selectedImage;
     Button camera, filter;
     ImageButton left, right;
-    FloatingActionButton share;
+    FloatingActionButton share, delete;
     String currentPhotoPath;
     TextView date_time, latlongtext;
     EditText caption;
@@ -93,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         date_time = findViewById(R.id.timestamp);
         filter = findViewById(R.id.filter_button);
         latlongtext = findViewById(R.id.latLongText);
+        delete = findViewById(R.id.delete_button);
 
         mMapView = findViewById(R.id.idLocationMap);
         Bundle mapViewBundle = null;
@@ -152,6 +155,52 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Intent i = new Intent(MainActivity.this, Filter.class);
                 startActivity(i);
             }
+        });
+
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Build an AlertDialog
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+                // Set a title for alert dialog
+                builder.setTitle("Permanently delete this photo?");
+
+                // Ask the final question
+                builder.setMessage("This cannot be undone!");
+
+                // Set the alert dialog yes button click listener
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(files[img_counter].delete()) {
+                            files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+                            Toast.makeText(getApplicationContext(),"Photo deleted!",Toast.LENGTH_SHORT).show();
+                            img_counter--;
+                            if(img_counter < 0){
+                                img_counter = 0;
+                            }
+                            updateCaption(files[img_counter]);
+                        }else{
+                            Toast.makeText(getApplicationContext(), "Action failed",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
+                // Set the alert dialog no button click listener
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Do something when No button clicked
+                        Toast.makeText(getApplicationContext(), "Delete aborted",Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                AlertDialog dialog = builder.create();
+                // Display the alert dialog on interface
+                dialog.show();
+            }
+
         });
 
         caption.setOnEditorActionListener(new TextView.OnEditorActionListener() {
