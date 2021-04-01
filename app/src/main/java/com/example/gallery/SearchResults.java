@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Environment;
 import android.view.View;
 import android.widget.ImageButton;
@@ -240,6 +241,8 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
 
     public void searchUpdate(File[] files) {
 
+        Debug.startMethodTracing("search.trace");
+
         float[] latLong = new float[2];
         ExifInterface Exif = null;
 
@@ -288,7 +291,8 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
 
         if (ResultList.size() == 0) {
             Toast.makeText(this, "0 pictures found", Toast.LENGTH_SHORT).show();
-            finish();
+            Intent i = new Intent(SearchResults.this, MainActivity.class);
+            startActivity(i);
         } else if (ResultList.size() == 1) {
             Toast.makeText(this, "1 picture found", Toast.LENGTH_SHORT).show();
             Intent i = new Intent(SearchResults.this, MainActivity.class);
@@ -298,6 +302,8 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
             Toast.makeText(this, ResultList.size() + " pictures found", Toast.LENGTH_SHORT).show();
             updateCaption(files[ResultList.get(0)]);
         }
+
+        Debug.stopMethodTracing();
     }
 
     public void updateCaption(File f) {
