@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.gallery.DataStorage.OnSwipeTouchListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -96,6 +97,15 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
                 moveRight();
             }
         });
+
+        selectedImage.setOnTouchListener(new OnSwipeTouchListener(this) {
+            @Override
+            public void onSwipeRight() { moveLeft(); }
+
+            @Override
+            public void onSwipeLeft() { moveRight(); }
+        });
+        
         selectedImage.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
