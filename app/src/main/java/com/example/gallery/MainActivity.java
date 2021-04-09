@@ -10,9 +10,7 @@ import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -24,10 +22,13 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -38,12 +39,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.gallery.BuildConfig;
+import com.example.gallery.DataStorage.OnSwipeTouchListener;
+import com.example.gallery.Filter;
+import com.example.gallery.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -51,40 +57,44 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
-
     public static final int CAMERA_PERM_CODE = 101;
     public static final int CAMERA_REQUEST_CODE = 102;
-    public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
     static final int REQUEST_TAKE_PHOTO = 1;
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
     private static int img_counter = 0;
-    ImageView selectedImage;
-    Button camera, filter;
-    ImageButton left, right;
-    FloatingActionButton share, delete;
-    String currentPhotoPath;
-    TextView date_time, latlongtext;
-    EditText caption;
-    File[] files = null;
-    boolean newImage = false;
-    File newImageFile = null;
+
     private MapView mMapView;
     private GoogleMap mGoogleMap;
     private LatLng ImageLocation = new LatLng(0, 0);
     private LatLngBounds mMapBoundary;
+    public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private ScaleGestureDetector mScaleGestureDetector;
+    private float mScaleFactor = 1.0f;
+
+    ImageView selectedImage;
+    Button camera, filter;
+    ImageButton left, right;
+    FloatingActionButton share;
+    String currentPhotoPath;
+    TextView date_time, latlongtext;
+    EditText caption;
+    File files[] = null;
+    boolean newImage = false;
+    File newImageFile = null;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+
+        Debug.startMethodTracing("sample");
 
         selectedImage = findViewById(R.id.displayImageView);
         camera = findViewById(R.id.snap);
@@ -95,7 +105,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         date_time = findViewById(R.id.timestamp);
         filter = findViewById(R.id.filter_button);
         latlongtext = findViewById(R.id.latLongText);
-        delete = findViewById(R.id.delete_button);
 
         mMapView = findViewById(R.id.idLocationMap);
         Bundle mapViewBundle = null;
@@ -149,58 +158,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        filter.setOnClickListener(new View.OnClickListener() {
+        selectedImage.setOnTouchListener(new OnSwipeTouchListener(this) {
             @Override
-            public void onClick(View v) {
+            public void onSwipeRight() { moveLeft(); }
+
+            @Override
+            public void onSwipeLeft() { moveRight(); }
+        });
+
+        mScaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
+
+        filter.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
                 Intent i = new Intent(MainActivity.this, Filter.class);
                 startActivity(i);
             }
-        });
-
-        delete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Build an AlertDialog
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-
-                // Set a title for alert dialog
-                builder.setTitle("Permanently delete this photo?");
-
-                // Ask the final question
-                builder.setMessage("This cannot be undone!");
-
-                // Set the alert dialog yes button click listener
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if(files[img_counter].delete()) {
-                            files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
-                            Toast.makeText(getApplicationContext(),"Photo deleted!",Toast.LENGTH_SHORT).show();
-                            img_counter--;
-                            if(img_counter < 0){
-                                img_counter = 0;
-                            }
-                            updateCaption(files[img_counter]);
-                        }else{
-                            Toast.makeText(getApplicationContext(), "Action failed",Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-
-                // Set the alert dialog no button click listener
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Do something when No button clicked
-                        Toast.makeText(getApplicationContext(), "Delete aborted",Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-                AlertDialog dialog = builder.create();
-                // Display the alert dialog on interface
-                dialog.show();
-            }
-
         });
 
         caption.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -208,10 +181,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     String cap = caption.getText().toString();
-                    if (newImage) {
+                    if(newImage){
                         updatePhoto(newImageFile.getPath(), cap);
                         newImage = false;
-                    } else {
+                    }else{
                         updatePhoto(files[img_counter].getPath(), cap);
                     }
                     InputMethodManager inputManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
@@ -223,15 +196,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         share.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick (View v) {
                 shareFunction();
             }
         });
     }
 
+    // this redirects all touch events in the activity to the gesture detector
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return mScaleGestureDetector.onTouchEvent(event);
+    }
+
+
     public void shareFunction() {
         try {
-            File[] files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+            File files[] = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
             File current_file = files[img_counter];
             //Toast.makeText(this, files[img_counter].toString(), Toast.LENGTH_SHORT).show();
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
@@ -244,6 +224,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } catch (Exception e) {
             e.printStackTrace();
         }
+        Debug.stopMethodTracing();
     }
 
     @Override
@@ -320,7 +301,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         new LatLng(topBoundary, rightBoundary)
                 );
                 mGoogleMap.clear();
-                if (files.length > 0) {
+                if(files.length > 0){
                     mGoogleMap.addMarker(new MarkerOptions()
                             .position(ImageLocation)
                             .title(files[img_counter].getName()));
@@ -361,6 +342,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else if (img_counter == 0) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
+        // sets image scale to 1 when scrolling
+        mScaleFactor = 1.0f;
+        selectedImage.setScaleX(mScaleFactor);
+        selectedImage.setScaleY(mScaleFactor);
     }
 
     private void moveLeft() {
@@ -371,6 +356,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else if (img_counter == files.length - 1) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
+        mScaleFactor = 1.0f;
+        selectedImage.setScaleX(mScaleFactor);
+        selectedImage.setScaleY(mScaleFactor);
     }
 
     public void filter(View view) {
@@ -397,35 +385,38 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    public void geoTag(File imageFile) {
+    public void geoTag(File imageFile){
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             Location location = null;
             LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            if (location == null) {
+            location = (Location) lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if(location == null) {
                 return;
             }
 
             try {
                 ExifInterface exif = new ExifInterface(imageFile.getPath());
+                //String latitudeStr = "90/1,12/1,30/1";
                 double lat = location.getLatitude();
                 double alat = Math.abs(lat);
                 String dms = Location.convert(alat, Location.FORMAT_SECONDS);
                 String[] splits = dms.split(":");
                 String[] secnds = (splits[2]).split("\\.");
                 String seconds;
-                //if (secnds.length == 0) {
-                //    seconds = splits[2];
-                //} else {
-                //    seconds = secnds[0];
-                //}
-                seconds = ((secnds.length == 0) ? splits[2] : secnds[0]);
+                if(secnds.length==0)
+                {
+                    seconds = splits[2];
+                }
+                else
+                {
+                    seconds = secnds[0];
+                }
 
                 String latitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
                 exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, latitudeStr);
 
-                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, lat > 0 ? "N" : "S");
+                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, lat>0?"N":"S");
 
                 double lon = location.getLongitude();
                 double alon = Math.abs(lon);
@@ -435,12 +426,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 splits = dms.split(":");
                 secnds = (splits[2]).split("\\.");
 
-                seconds = ((secnds.length == 0) ? splits[2] : secnds[0]);
+                if(secnds.length==0)
+                {
+                    seconds = splits[2];
+                }
+                else
+                {
+                    seconds = secnds[0];
+                }
                 String longitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
 
 
                 exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, longitudeStr);
-                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, lon > 0 ? "E" : "W");
+                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, lon>0?"E":"W");
 
                 exif.saveAttributes();
             } catch (IOException e) {
@@ -525,7 +523,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     e.printStackTrace();
                 }
 
+
                 int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
 
                 if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
                     try {
@@ -550,20 +550,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 geoTag(newImageFile);
                 updateCaption(newImageFile);
             }
-            if(resultCode == Activity.RESULT_CANCELED){
-                newImageFile = new File(currentPhotoPath);
-                newImageFile.delete();
-            }
         }
     }
 
     public void updatePhoto(String path, String caption) {
         String[] attr = path.split("_");
         if (attr.length > 4) {
-            File to = new File(attr[0] + "_" + attr[1] + "_" + attr[2] + "_" + caption + "_" + attr[4]);
+            File to = new File(attr[0] + "_" + attr[1] + "_" + attr[2] + "_" + caption +  "_" + attr[4]);
             File from = new File(path);
             from.renameTo(to);
-        } else {
+        }else{
             File to = new File(attr[0] + "_" + attr[1] + "_" + attr[2] + "_" + caption + "_" + attr[3]);
             File from = new File(path);
             from.renameTo(to);
@@ -591,7 +587,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         ImageLocation = new LatLng(latLong[0], latLong[1]);
         mMapView.getMapAsync(this);
 
-        if (path_str == null || path_str == "") {
+        if (path_str == null || path_str =="") {
             selectedImage.setImageResource(R.mipmap.ic_launcher);
             date_time.setText("");
             caption.setText("");
@@ -606,13 +602,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 date = attr[1];
             }
             if (date.length() == 8) {
-                String date_format = date.substring(0, 4) + "/" + date.substring(4, 6) + "/" + date.substring(6, 8);
+                String date_format = date.substring(0,4) + "/" + date.substring(4,6) + "/" + date.substring(6,8);
                 date_time.setText(date_format);
             } else {
                 date_time.setText(date);
             }
-            String location_format = "Lat: " + String.format(Locale.US,"%.3f", latLong[0]) + " Long: " + String.format(Locale.US,"%.3f", latLong[1]);
+            String location_format =  "Lat: " + String.format("%.3f", latLong[0]) + " Long: " + String.format("%.3f", latLong[1]);
             latlongtext.setText(location_format);
+        }
+    }
+
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+
+        // when a scale gesture is detected, use it to resize the image
+        @Override
+        public boolean onScale(ScaleGestureDetector scaleGestureDetector){
+            mScaleFactor *= scaleGestureDetector.getScaleFactor();
+            selectedImage.setScaleX(mScaleFactor);
+            selectedImage.setScaleY(mScaleFactor);
+            return true;
         }
     }
 }
