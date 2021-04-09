@@ -238,6 +238,7 @@ public class Password extends AppCompatActivity {
 
         File stored_password = new File(path);
         password = pass.getText().toString();
+
         if (!pw) {
             try {
                 if (strength) {
@@ -264,6 +265,7 @@ public class Password extends AppCompatActivity {
 
                 } else {
                     Toast.makeText(this, "Password isn't strong enough!", Toast.LENGTH_SHORT).show();
+                    pass.getText().clear();
                 }
 
             } catch (IOException e) {
@@ -291,8 +293,6 @@ public class Password extends AppCompatActivity {
 
                 if (decoded.equals(password)) {
                     Toast.makeText(this, "Password correct!", Toast.LENGTH_SHORT).show();
-//                    Intent intent = new Intent(this, MainActivity.class);
-//                    startActivity(intent);
                     return true;
 
                 } else {
