@@ -83,8 +83,6 @@
         android:layout_height="370dp"
         android:layout_marginTop="4dp"
         android:contentDescription="@string/displayImageView_Photo"
-        android:src="@mipmap/ic_launcher"
-        android:layout_centerInParent = "true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
