@@ -24,10 +24,13 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -38,6 +41,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.gallery.BuildConfig;
+import com.example.gallery.DataStorage.OnSwipeTouchListener;
+import com.example.gallery.Filter;
+import com.example.gallery.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -64,6 +71,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     static final int REQUEST_TAKE_PHOTO = 1;
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
     private static int img_counter = 0;
+    private MapView mMapView;
+    private GoogleMap mGoogleMap;
+    private LatLng ImageLocation = new LatLng(0, 0);
+    private LatLngBounds mMapBoundary;
+    public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
+
+    private ScaleGestureDetector mScaleGestureDetector;
+    private float mScaleFactor = 1.0f;
+
     ImageView selectedImage;
     Button camera, filter;
     ImageButton left, right;
@@ -85,6 +101,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
+
+        Debug.startMethodTracing("sample");
 
         selectedImage = findViewById(R.id.displayImageView);
         camera = findViewById(R.id.snap);
@@ -149,7 +167,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        filter.setOnClickListener(new View.OnClickListener() {
+
+		selectedImage.setOnTouchListener(new OnSwipeTouchListener(this) {
+            @Override
+            public void onSwipeRight() { moveLeft(); }
+
+            @Override
+            public void onSwipeLeft() { moveRight(); }
+        });
+
+        mScaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
+
+        filter.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(MainActivity.this, Filter.class);
@@ -229,6 +258,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+    // this redirects all touch events in the activity to the gesture detector
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return mScaleGestureDetector.onTouchEvent(event);
+    }
+
+
     public void shareFunction() {
         try {
             File[] files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
@@ -244,6 +280,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } catch (Exception e) {
             e.printStackTrace();
         }
+        Debug.stopMethodTracing();
     }
 
     @Override
@@ -361,6 +398,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else if (img_counter == 0) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
+        // sets image scale to 1 when scrolling
+        mScaleFactor = 1.0f;
+        selectedImage.setScaleX(mScaleFactor);
+        selectedImage.setScaleY(mScaleFactor);
     }
 
     private void moveLeft() {
@@ -371,6 +412,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else if (img_counter == files.length - 1) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
+        mScaleFactor = 1.0f;
+        selectedImage.setScaleX(mScaleFactor);
+        selectedImage.setScaleY(mScaleFactor);
     }
 
     public void filter(View view) {
@@ -613,6 +657,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             String location_format = "Lat: " + String.format(Locale.US,"%.3f", latLong[0]) + " Long: " + String.format(Locale.US,"%.3f", latLong[1]);
             latlongtext.setText(location_format);
+        }
+    }
+
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+
+        // when a scale gesture is detected, use it to resize the image
+        @Override
+        public boolean onScale(ScaleGestureDetector scaleGestureDetector){
+            mScaleFactor *= scaleGestureDetector.getScaleFactor();
+            selectedImage.setScaleX(mScaleFactor);
+            selectedImage.setScaleY(mScaleFactor);
+            return true;
         }
     }
 }
