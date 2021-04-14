@@ -10,9 +10,7 @@ import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -28,6 +26,8 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     ImageView selectedImage;
     Button camera, filter;
     ImageButton left, right;
-    FloatingActionButton share, delete;
+    FloatingActionButton share;
     String currentPhotoPath;
     TextView date_time, latlongtext;
     EditText caption;
@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mGoogleMap;
     private LatLng ImageLocation = new LatLng(0, 0);
     private LatLngBounds mMapBoundary;
+    private ScaleGestureDetector mScaleGestureDetector;
+    private float mScaleFactor = 1.0f;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -95,7 +97,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         date_time = findViewById(R.id.timestamp);
         filter = findViewById(R.id.filter_button);
         latlongtext = findViewById(R.id.latLongText);
-        delete = findViewById(R.id.delete_button);
 
         mMapView = findViewById(R.id.idLocationMap);
         Bundle mapViewBundle = null;
@@ -128,6 +129,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             searchParams[0] = (String) savedInstanceState.getSerializable("CAPTION");
         }
 
+
+        mScaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
+
         camera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -149,58 +153,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
+        selectedImage.setOnTouchListener(new OnSwipeTouchListener(this) {
+            @Override
+            public void onSwipeRight() { moveLeft(); }
+
+            @Override
+            public void onSwipeLeft() { moveRight(); }
+        });
+
+        mScaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
+
+
         filter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(MainActivity.this, Filter.class);
                 startActivity(i);
             }
-        });
-
-        delete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Build an AlertDialog
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-
-                // Set a title for alert dialog
-                builder.setTitle("Permanently delete this photo?");
-
-                // Ask the final question
-                builder.setMessage("This cannot be undone!");
-
-                // Set the alert dialog yes button click listener
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if(files[img_counter].delete()) {
-                            files = getExternalFilesDir(Environment.DIRECTORY_PICTURES).listFiles();
-                            Toast.makeText(getApplicationContext(),"Photo deleted!",Toast.LENGTH_SHORT).show();
-                            img_counter--;
-                            if(img_counter < 0){
-                                img_counter = 0;
-                            }
-                            updateCaption(files[img_counter]);
-                        }else{
-                            Toast.makeText(getApplicationContext(), "Action failed",Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-
-                // Set the alert dialog no button click listener
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Do something when No button clicked
-                        Toast.makeText(getApplicationContext(), "Delete aborted",Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-                AlertDialog dialog = builder.create();
-                // Display the alert dialog on interface
-                dialog.show();
-            }
-
         });
 
         caption.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -227,6 +196,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 shareFunction();
             }
         });
+
+    }
+
+    // this redirects all touch events in the activity to the gesture detector
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return mScaleGestureDetector.onTouchEvent(event);
     }
 
     public void shareFunction() {
@@ -361,6 +337,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else if (img_counter == 0) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
+        // sets image scale to 1 when scrolling
+        mScaleFactor = 1.0f;
+        selectedImage.setScaleX(mScaleFactor);
+        selectedImage.setScaleY(mScaleFactor);
     }
 
     private void moveLeft() {
@@ -371,6 +351,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else if (img_counter == files.length - 1) {
             Toast.makeText(this, "No more pictures!", Toast.LENGTH_SHORT).show();
         }
+        // sets image scale to 1 when scrolling
+        mScaleFactor = 1.0f;
+        selectedImage.setScaleX(mScaleFactor);
+        selectedImage.setScaleY(mScaleFactor);
     }
 
     public void filter(View view) {
@@ -613,6 +597,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             String location_format = "Lat: " + String.format(Locale.US,"%.3f", latLong[0]) + " Long: " + String.format(Locale.US,"%.3f", latLong[1]);
             latlongtext.setText(location_format);
+        }
+    }
+
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+
+        // when a scale gesture is detected, use it to resize the image
+        @Override
+        public boolean onScale(ScaleGestureDetector scaleGestureDetector){
+            mScaleFactor *= scaleGestureDetector.getScaleFactor();
+            selectedImage.setScaleX(mScaleFactor);
+            selectedImage.setScaleY(mScaleFactor);
+            return true;
         }
     }
 }
