@@ -1,5 +1,6 @@
 package com.example.gallery;
 
+import android.support.test.InstrumentationRegistry;
 import android.widget.DatePicker;
 
 import org.hamcrest.Matchers;
@@ -8,10 +9,14 @@ import org.junit.Test;
 
 import androidx.test.espresso.contrib.PickerActions;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
+import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.UiObjectNotFoundException;
+import androidx.test.uiautomator.UiSelector;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.swipeLeft;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -46,41 +51,45 @@ public class UITest {
     }*/
 
     @Test
-    public void searchAndShare() throws InterruptedException {
-        Thread.sleep(3000);
-        onView(withId(R.id.filter_button)).perform(click());
-        Thread.sleep(1000);
+    public void FullTest() throws InterruptedException {
 
-        onView(withId(R.id.startDateText)).perform(click());
-        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2021, 2, 4));
-        onView(withId(android.R.id.button1)).perform(click());
-        Thread.sleep(1000);
-        onView(withId(R.id.endDateText)).perform(click());
-        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2021, 2, 6));
-        onView(withId(android.R.id.button1)).perform(click());
-        Thread.sleep(1000);
-        onView(withId(R.id.captionText)).perform(typeText("test"), closeSoftKeyboard());
-        Thread.sleep(1000);
-        onView(withId(R.id.TopLeftLat)).perform(typeText("54"), closeSoftKeyboard());
-        Thread.sleep(1000);
-        onView(withId(R.id.TopLeftLong)).perform(typeText("-125"), closeSoftKeyboard());
-        Thread.sleep(1000);
-        onView(withId(R.id.BottomRightLat)).perform(typeText("46"), closeSoftKeyboard());
-        Thread.sleep(1000);
-        onView(withId(R.id.BottomRightLong)).perform(typeText("-110"), closeSoftKeyboard());
-        Thread.sleep(1000);
-        onView(withId(R.id.searchButton)).perform(click());
-        Thread.sleep(4000);
-        onView(withId(R.id.button_right)).perform(click());
+//        Thread.sleep(3000);
+//        onView(withId(R.id.filter_button)).perform(click());
+//        Thread.sleep(1000);
+//        onView(withId(R.id.startDateText)).perform(click());
+//        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2021, 2, 4));
+//        onView(withId(android.R.id.button1)).perform(click());
+//        Thread.sleep(1000);
+//        onView(withId(R.id.endDateText)).perform(click());
+//        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2021, 2, 6));
+//        onView(withId(android.R.id.button1)).perform(click());
+//        Thread.sleep(1000);
+//        onView(withId(R.id.captionText)).perform(typeText("test"), closeSoftKeyboard());
+//        Thread.sleep(1000);
+//        onView(withId(R.id.TopLeftLat)).perform(typeText("54"), closeSoftKeyboard());
+//        Thread.sleep(1000);
+//        onView(withId(R.id.TopLeftLong)).perform(typeText("-125"), closeSoftKeyboard());
+//        Thread.sleep(1000);
+//        onView(withId(R.id.BottomRightLat)).perform(typeText("46"), closeSoftKeyboard());
+//        Thread.sleep(1000);
+//        onView(withId(R.id.BottomRightLong)).perform(typeText("-110"), closeSoftKeyboard());
+//        Thread.sleep(1000);
+//        onView(withId(R.id.searchButton)).perform(click());
+//        Thread.sleep(4000);
+//        onView(withId(R.id.button_right)).perform(click());
+//        Thread.sleep(2000);
+//        onView(withId(R.id.button_left)).perform(click());
+//        Thread.sleep(2000);
+//        onView(withId(R.id.button_left)).perform(click());
+//        Thread.sleep(2000);
+//        onView(withId(R.id.searchImageView)).perform(click());
+//        Thread.sleep(3000);
         Thread.sleep(2000);
-        onView(withId(R.id.button_left)).perform(click());
+        onView(withId(R.id.displayImageView)).perform(swipeLeft());
         Thread.sleep(2000);
-        onView(withId(R.id.button_left)).perform(click());
+        onView(withId(R.id.displayImageView)).perform(swipeLeft());
         Thread.sleep(2000);
-        onView(withId(R.id.searchImageView)).perform(click());
-        Thread.sleep(3000);
-        onView(withId(R.id.share_button)).perform(click());
-        Thread.sleep(10000);
+        onView(withId(R.id.displayImageView)).perform();
         
     }
 }
