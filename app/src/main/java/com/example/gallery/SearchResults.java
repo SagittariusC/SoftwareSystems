@@ -258,14 +258,19 @@ public class SearchResults extends AppCompatActivity implements OnMapReadyCallba
             Exif.getLatLong(latLong);
 
             Bundle extras = getIntent().getExtras();
+            float TOPLEFTLAT = extras.getFloat("TOPLEFTLAT");
+            float BOTTOMRIGHTLAT = extras.getFloat("BOTTOMRIGHTLAT");
+            float TOPLEFTLONG = extras.getFloat("TOPLEFTLONG");
+            float BOTTOMRIGHTLONG = extras.getFloat("BOTTOMRIGHTLONG");
 
-            if (attr[3].contains(extras.getString("CAPTION")) || extras.getString("CAPTION").length() == 0
+
+            if ((attr[3].contains(extras.getString("CAPTION")) || extras.getString("CAPTION").equals("NOCAPTION"))
                     && Integer.parseInt(attr[1]) >= Integer.parseInt(extras.getString("STARTTIMESTAMP"))
                     && Integer.parseInt(attr[1]) <= Integer.parseInt(extras.getString("ENDTIMESTAMP"))
-                    && latLong[0] < extras.getFloat("TOPLEFTLAT")
-                    && latLong[0] > extras.getFloat("BOTTOMRIGHTLAT")
-                    && latLong[1] > extras.getFloat("TOPLEFTLONG")
-                    && latLong[1] < extras.getFloat("BOTTOMRIGHTLONG")) {
+                    && latLong[0] < TOPLEFTLAT
+                    && latLong[0] > BOTTOMRIGHTLAT
+                    && latLong[1] > TOPLEFTLONG
+                    && latLong[1] < BOTTOMRIGHTLONG) {
 
                 ResultList.add(index);
                 if (ResultList.size() == 1) {

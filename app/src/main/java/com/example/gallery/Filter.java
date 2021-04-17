@@ -151,7 +151,7 @@ public class Filter extends AppCompatActivity {
             //if >1 field is full, get inputs or default
             i.putExtra("STARTTIMESTAMP", fromDate.length() != 0 ? fromDate.getText().toString() : "0");
             i.putExtra("ENDTIMESTAMP", toDate.length() != 0 ? toDate.getText().toString() : "30000000");
-            i.putExtra("CAPTION", caption.length() != 0 ? caption.getText().toString() : "");
+            i.putExtra("CAPTION", caption.length() != 0 ? caption.getText().toString() : "NOCAPTION");
             i.putExtra("TOPLEFTLAT", TopLeftLat.length() != 0 ? Float.parseFloat(TopLeftLat.getText().toString()) : 1000);
             i.putExtra("TOPLEFTLONG", TopLeftLong.length() != 0 ? Float.parseFloat(TopLeftLong.getText().toString()) : -1000);
             i.putExtra("BOTTOMRIGHTLAT", BottomRightLat.length() != 0 ? Float.parseFloat(BottomRightLat.getText().toString()) : -1000);

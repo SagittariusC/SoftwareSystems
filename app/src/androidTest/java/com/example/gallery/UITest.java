@@ -9,9 +9,6 @@ import org.junit.Test;
 
 import androidx.test.espresso.contrib.PickerActions;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
-import androidx.test.uiautomator.UiDevice;
-import androidx.test.uiautomator.UiObjectNotFoundException;
-import androidx.test.uiautomator.UiSelector;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
